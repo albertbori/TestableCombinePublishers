@@ -1,10 +1,10 @@
 # Testable Combine Publishers
 
-### An easy, declarative way to unit test Combine Publishers in Swift
+An easy, declarative way to unit test Combine Publishers in Swift
 
 ## About
 
-Combine Publishers are [notoriously verbose to unit test](https://mokacoding.com/blog/testing-combine-publisher-cheatsheet/#how-to-test-publisher-publishes-many-values-then-finishes). They require you to write complex Combine chains in Swift for each test, keeping track of `AnyCancellable`s, and interweaving `XCTestExpectation`s, fulfillment requirements, and timeouts.
+Combine Publishers are [notoriously verbose to unit test](https://mokacoding.com/blog/testing-combine-publisher-cheatsheet/#how-to-test-publisher-publishes-one-value-then-finishes). They require you to write complex Combine chains in Swift for each test, keeping track of `AnyCancellable`s, and interweaving `XCTestExpectation`s, fulfillment requirements, and timeouts.
 
 This Swift Package aims to simplify writing unit tests for Combine `Publisher`s by providing a natural spelling of `.expect(...)` for chaining expectations on the `Publisher` subject. The resulting `PublisherExpectation` type collects the various expectations and then provides a way to assert that the expectations are fulfilled by calling `.waitForExpectations(timeout: 1)`
 
@@ -88,7 +88,7 @@ func testNonEquatableFailure() {
 
 ### Value Expectations
 
-- `expect(_ expected: Output)` - Asserts that the provided value will be emitted by the `Publisher`
+- `expect(_ expected: Output)` - Asserts that the provided `Equatable` value will be emitted by the `Publisher`
 - `expect(_ assertion: (Output) -> Void)` - Invokes the provided assertion closure on every value emitted by the `Publisher`. Useful for calling `XCTAssert` variants where custom evaluation is required
 
 ### Success Expectations
@@ -99,7 +99,7 @@ func testNonEquatableFailure() {
 
 - `expectFailure()` - Asserts that the `Publisher` data stream completes with a failure status (`.failure(Failure)`)
 - `expectFailure(_ failure: Failure)` - Asserts that the provided `Equatable` `Failure` type is returned when the `Publisher` completes
-- `expectFailure(_ assertion: (Failure) -> Void)` - Invokes the provided assertion closure on the `Failure` result status's associated `Error` value  of the `Publisher`. Useful for calling `XCTAssert` variants where custom evaluation is required
+- `expectFailure(_ assertion: (Failure) -> Void)` - Invokes the provided assertion closure on the `Failure` result's associated `Error` value  of the `Publisher`. Useful for calling `XCTAssert` variants where custom evaluation is required
 
 ### Completion Expectations
 
