@@ -84,7 +84,7 @@ public final class PublisherExpectation<UpstreamPublisher: Publisher> {
 
 public extension PublisherExpectation {
     
-    /// Asserts that the provided value will be emitted by the `Publisher`
+    /// Asserts that the provided `Equatable` value will be emitted by the `Publisher`
     /// - Parameters:
     ///   - expected: The `Equatable` value expected from the `Publisher`
     ///   - message: The message to attach to the `XCTAssertEqual` failure, if a mismatch is found
@@ -283,10 +283,10 @@ public extension PublisherExpectation {
         return self
     }
     
-    /// Invokes the provided assertion closure on the `Failure` result status's associated `Error` value  of the `Publisher`
+    /// Invokes the provided assertion closure on the `Failure` result's associated `Error` value  of the `Publisher`
     /// Useful for calling `XCTAssert` variants where custom evaluation is required
     /// - Parameters:
-    ///   - assertion: The assertion to be performed on the `Failure` result status's associated `Error` value
+    ///   - assertion: The assertion to be performed on the `Failure` result's associated `Error` value
     ///   - file: The calling file. Used for showing context-appropriate unit test failures in Xcode
     ///   - line: The calling line of code. Used for showing context-appropriate unit test failures in Xcode
     /// - Returns: A chainable `PublisherExpectation` that matches the contextual upstream `Publisher` type
@@ -327,10 +327,10 @@ public extension Publisher {
         .init(upstream: self).expectFailure(failure, message: message, file: file, line: line)
     }
     
-    /// Invokes the provided assertion closure on the `Failure` result status's associated `Error` value  of the `Publisher`
+    /// Invokes the provided assertion closure on the `Failure` result's associated `Error` value  of the `Publisher`
     /// Useful for calling `XCTAssert` variants where custom evaluation is required
     /// - Parameters:
-    ///   - assertion: The assertion to be performed on the `Failure` result status's associated `Error` value
+    ///   - assertion: The assertion to be performed on the `Failure` result's associated `Error` value
     ///   - file: The calling file. Used for showing context-appropriate unit test failures in Xcode
     ///   - line: The calling line of code. Used for showing context-appropriate unit test failures in Xcode
     /// - Returns: A chainable `PublisherExpectation` that matches the contextual upstream `Publisher` type
