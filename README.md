@@ -26,12 +26,13 @@ func testSingleValueCompletingPublisher() {
 }
 ```
 
-For a `Publisher` that is expected to emit multiple values, but is not expected to complete
+For a `Publisher` that is expected to emit multiple values, but is expected to not complete
 ```swift
 func testMultipleValuePersistentPublisher() {
     somePublisher
         .collect(someCount)
         .expect(someEquatableValueArray)
+        .expectNoCompletion()
         .waitForExpectations(timeout: 1)
 }
 ```
@@ -89,6 +90,7 @@ func testNonEquatableFailure() {
 ### Value Expectations
 
 - `expect(_ expected: Output)` - Asserts that the provided `Equatable` value will be emitted by the `Publisher`
+- `expectNot(_ expected: Output)` - Asserts that a value will be emitted by the `Publisher` and that it does NOT match the provided `Equatable`
 - `expect(_ assertion: (Output) -> Void)` - Invokes the provided assertion closure on every value emitted by the `Publisher`. Useful for calling `XCTAssert` variants where custom evaluation is required
 
 ### Success Expectations
@@ -99,11 +101,13 @@ func testNonEquatableFailure() {
 
 - `expectFailure()` - Asserts that the `Publisher` data stream completes with a failure status (`.failure(Failure)`)
 - `expectFailure(_ failure: Failure)` - Asserts that the provided `Equatable` `Failure` type is returned when the `Publisher` completes
+- `expectNotFailure(_ failure: Failure)` - Asserts that the `Publisher` completes with a `Failure` type which does NOT match the provided `Equatable` `Failure`
 - `expectFailure(_ assertion: (Failure) -> Void)` - Invokes the provided assertion closure on the `Failure` result's associated `Error` value  of the `Publisher`. Useful for calling `XCTAssert` variants where custom evaluation is required
 
 ### Completion Expectations
 
 - `expectCompletion()` - Asserts that the `Publisher` data stream completes, indifferent of the returned success/failure status
+- `expectNoCompletion()` - Asserts that the `Publisher` data stream does NOT complete. ⚠️ This will wait for the full timeout in `waitForExpectations(timeout:)`
 - `expectCompletion(_ assertion: (Completion<Failure>) -> Void)` - Invokes the provided assertion closure on the `recieveCompletion` handler of the `Publisher`. Useful for calling `XCTAssert` variants where custom evaluation is required
 
 ## Upcoming Features
