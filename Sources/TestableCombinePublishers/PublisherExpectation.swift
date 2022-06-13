@@ -69,7 +69,7 @@ public final class PublisherExpectation<UpstreamPublisher: Publisher> {
             delegate.invertedExpectations
                 .forEach({ expectation in
                     let expectation = expectation.asLocatableTestExpectation(file: file, line: line)
-                    XCTFail("Publisher expectation were fulfilled inverted: \(expectation.description)", file: expectation.file, line: expectation.line)
+                    XCTFail("Inverted publisher expectation failed: \(expectation.description)", file: expectation.file, line: expectation.line)
                 })
         case .interrupted:
             XCTFail("Publisher expectations process was interrupted by: \(delegate.interruptingWaiter?.description ?? "unknown")", file: file, line: line)
@@ -170,6 +170,24 @@ public extension PublisherExpectation {
         return self
     }
     
+    /// Asserts that the `Publisher` data stream does NOT complete.
+    /// ⚠️ This will wait for the full timeout in `waitForExpectations(timeout:)`
+    /// - Parameters:
+    ///   - file: The calling file. Used for showing context-appropriate unit test failures in Xcode
+    ///   - line: The calling line of code. Used for showing context-appropriate unit test failures in Xcode
+    /// - Returns: A chainable `PublisherExpectation` that matches the contextual upstream `Publisher` type
+    func expectNoCompletion(file: StaticString = #filePath, line: UInt = #line) -> Self {
+        let expectation = LocatableTestExpectation(description: "expectNoCompletion()", file: file, line: line)
+        expectation.isInverted = true
+        expectations.append(expectation)
+        upstreamPublisher
+            .sink { completion in
+                expectation.fulfill()
+            } receiveValue: { value in }
+            .store(in: &cancellables)
+        return self
+    }
+    
     /// Invokes the provided assertion closure on the `recieveCompletion` handler of the `Publisher`
     /// Useful for calling `XCTAssert` variants where custom evaluation is required
     /// - Parameters:
@@ -199,6 +217,16 @@ public extension Publisher {
     /// - Returns: A chainable `PublisherExpectation` that matches the contextual upstream `Publisher` type
     func expectCompletion(file: StaticString = #filePath, line: UInt = #line) -> PublisherExpectation<Self> {
         .init(upstream: self).expectCompletion(file: file, line: line)
+    }
+    
+    /// Asserts that the `Publisher` data stream does NOT complete.
+    /// ⚠️ This will wait for the full timeout in `waitForExpectations(timeout:)`
+    /// - Parameters:
+    ///   - file: The calling file. Used for showing context-appropriate unit test failures in Xcode
+    ///   - line: The calling line of code. Used for showing context-appropriate unit test failures in Xcode
+    /// - Returns: A chainable `PublisherExpectation` that matches the contextual upstream `Publisher` type
+    func expectNoCompletion(file: StaticString = #filePath, line: UInt = #line) -> PublisherExpectation<Self> {
+        .init(upstream: self).expectNoCompletion(file: file, line: line)
     }
     
     /// Invokes the provided assertion closure on the `recieveCompletion` handler of the `Publisher`

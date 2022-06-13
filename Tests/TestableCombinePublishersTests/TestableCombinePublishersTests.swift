@@ -132,6 +132,20 @@ final class TestableCombinePublishersTests: XCTestCase {
             .waitForExpectations(timeout: 1)
     }
     
+    func testNoCompletion() {
+        PassthroughSubject<Void, Never>()
+            .expectNoCompletion()
+            .waitForExpectations(timeout: 1)
+    }
+    
+    func testNoCompletionFailure() {
+        XCTExpectFailure("Incorrect assertion should fail")
+        [Int]()
+            .publisher
+            .expectNoCompletion()
+            .waitForExpectations(timeout: 1)
+    }
+    
     func testCompletionClosure() {
         [Int]()
             .publisher
