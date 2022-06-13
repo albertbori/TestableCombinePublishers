@@ -200,6 +200,24 @@ final class TestableCombinePublishersTests: XCTestCase {
             .waitForExpectations(timeout: 1)
     }
     
+    func testNotFailureValueCompletion() {
+        Fail<Void, MockError>(error: MockError.someProblem)
+            .expectNotFailure(MockError.otherProblem)
+            .waitForExpectations(timeout: 1)
+    }
+    
+    func testNotFailureValueCompletionFailure() {
+        XCTExpectFailure("Incorrect assertion should fail")
+        PassthroughSubject<Void, MockError>()
+            .expectNotFailure(MockError.someProblem)
+            .waitForExpectations(timeout: 1)
+        
+        XCTExpectFailure("Incorrect assertion should fail")
+        Fail<Void, MockError>(error: MockError.someProblem)
+            .expectNotFailure(MockError.someProblem)
+            .waitForExpectations(timeout: 1)
+    }
+    
     func testFailureClosureCompletion() {
         Fail<Void, MockError>(error: MockError.someProblem)
             .expectFailure({ XCTAssertEqual($0, .someProblem) })

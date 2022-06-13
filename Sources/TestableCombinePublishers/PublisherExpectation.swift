@@ -291,6 +291,27 @@ public extension PublisherExpectation {
         return self
     }
     
+    /// Asserts that the `Publisher` completes with a `Failure` type which does NOT match the provided `Equatable` `Failure`
+    /// - Parameters:
+    ///   - failure: The `Equatable` `Failure` type that should NOT be returned when the `Publisher` completes
+    ///   - message: The message to attach to the `XCTAssertEqual` failure, if a mismatch is found
+    ///   - file: The calling file. Used for showing context-appropriate unit test failures in Xcode
+    ///   - line: The calling line of code. Used for showing context-appropriate unit test failures in Xcode
+    /// - Returns: A chainable `PublisherExpectation` that matches the contextual upstream `Publisher` type
+    func expectNotFailure(_ failure: UpstreamPublisher.Failure, message: String? = nil, file: StaticString = #filePath, line: UInt = #line) -> Self where UpstreamPublisher.Failure: Equatable {
+        let expectation = LocatableTestExpectation(description: "expectNotFailure(\(failure))", file: file, line: line)
+        expectations.append(expectation)
+        upstreamPublisher
+            .sink { completion in
+                if case .failure(let error) = completion {
+                    XCTAssertNotEqual(failure, error, message ?? "", file: file, line: line)
+                    expectation.fulfill()
+                }
+            } receiveValue: { value in }
+            .store(in: &cancellables)
+        return self
+    }
+    
     /// Invokes the provided assertion closure on the `Failure` result's associated `Error` value  of the `Publisher`
     /// Useful for calling `XCTAssert` variants where custom evaluation is required
     /// - Parameters:
@@ -333,6 +354,17 @@ public extension Publisher {
     /// - Returns: A chainable `PublisherExpectation` that matches the contextual upstream `Publisher` type
     func expectFailure(_ failure: Failure, message: String? = nil, file: StaticString = #filePath, line: UInt = #line) -> PublisherExpectation<Self> where Failure: Equatable {
         .init(upstream: self).expectFailure(failure, message: message, file: file, line: line)
+    }
+    
+    /// Asserts that the `Publisher` completes with a `Failure` type which does NOT match the provided `Equatable` `Failure`
+    /// - Parameters:
+    ///   - failure: The `Equatable` `Failure` type that should be returned when the `Publisher` completes
+    ///   - message: The message to attach to the `XCTAssertEqual` failure, if a mismatch is found
+    ///   - file: The calling file. Used for showing context-appropriate unit test failures in Xcode
+    ///   - line: The calling line of code. Used for showing context-appropriate unit test failures in Xcode
+    /// - Returns: A chainable `PublisherExpectation` that matches the contextual upstream `Publisher` type
+    func expectNotFailure(_ failure: Failure, message: String? = nil, file: StaticString = #filePath, line: UInt = #line) -> PublisherExpectation<Self> where Failure: Equatable {
+        .init(upstream: self).expectNotFailure(failure, message: message, file: file, line: line)
     }
     
     /// Invokes the provided assertion closure on the `Failure` result's associated `Error` value  of the `Publisher`
