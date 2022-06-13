@@ -2,6 +2,8 @@
 
 An easy, declarative way to unit test Combine Publishers in Swift
 
+![Example Combine Unit Test](example.png)
+
 ## About
 
 Combine Publishers are [notoriously verbose to unit test](https://mokacoding.com/blog/testing-combine-publisher-cheatsheet/#how-to-test-publisher-publishes-one-value-then-finishes). They require you to write complex Combine chains in Swift for each test, keeping track of `AnyCancellable`s, and interweaving `XCTestExpectation`s, fulfillment requirements, and timeouts.
