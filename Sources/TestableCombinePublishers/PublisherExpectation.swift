@@ -248,7 +248,7 @@ public extension Publisher {
     }
 }
 
-// MARK: - Receive Completion Error Expectations
+// MARK: - Receive Completion Failure Expectations
 
 public extension PublisherExpectation {
     

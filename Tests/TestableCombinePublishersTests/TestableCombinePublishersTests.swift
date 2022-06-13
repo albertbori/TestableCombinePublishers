@@ -29,6 +29,8 @@ import XCTest
 
 final class TestableCombinePublishersTests: XCTestCase {
     
+    // MARK: - Receive Value Expectations
+    
     func testSingleEquatableValue() {
         ["cool"]
             .publisher
@@ -114,6 +116,8 @@ final class TestableCombinePublishersTests: XCTestCase {
             .waitForExpectations(timeout: 1)
     }
     
+    // MARK: - Receive Completion Expectations
+    
     func testCompletion() {
         [Int]()
             .publisher
@@ -147,7 +151,9 @@ final class TestableCombinePublishersTests: XCTestCase {
             .waitForExpectations(timeout: 1)
     }
     
-    func testFinishedCompletion() {
+    // MARK: - Receive Success Expectations
+    
+    func testSuccessCompletion() {
         [Int]()
             .publisher
             .expectSuccess()
@@ -161,7 +167,9 @@ final class TestableCombinePublishersTests: XCTestCase {
             .waitForExpectations(timeout: 1)
     }
     
-    func testSuccessCompletion() {
+    // MARK: - Receive Completion Failure Expectations
+    
+    func testFailureCompletion() {
         Fail<Void, MockError>(error: MockError.someProblem)
             .expectFailure()
             .waitForExpectations(timeout: 1)
@@ -210,6 +218,8 @@ final class TestableCombinePublishersTests: XCTestCase {
             .waitForExpectations(timeout: 1)
         
     }
+    
+    // MARK: - Misc Tests
     
     func testMultipleExpectations() {
         ["cool"]
