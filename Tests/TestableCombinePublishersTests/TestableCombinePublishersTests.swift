@@ -52,6 +52,27 @@ final class TestableCombinePublishersTests: XCTestCase {
             .waitForExpectations(timeout: 1)
     }
     
+    func testExpectNotValue() {
+        ["neat"]
+            .publisher
+            .expectNot("cool")
+            .waitForExpectations(timeout: 1)
+    }
+    
+    func testExpectNotFail() {
+        XCTExpectFailure("Incorrect assertion should fail")
+        ["cool"]
+            .publisher
+            .expectNot("cool")
+            .waitForExpectations(timeout: 1)
+        
+        XCTExpectFailure("Incorrect assertion should fail")
+        [String]()
+            .publisher
+            .expectNot("cool")
+            .waitForExpectations(timeout: 1)
+    }
+    
     func testSingleValueClosure() async {
         ["cool"]
             .publisher

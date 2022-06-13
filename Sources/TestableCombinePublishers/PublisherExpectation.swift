@@ -104,6 +104,26 @@ public extension PublisherExpectation {
         return self
     }
     
+    /// Asserts that a value will be emitted by the `Publisher` and that it does NOT match the provided `Equatable`
+    /// - Parameters:
+    ///   - expected: The `Equatable` value NOT expected from the `Publisher`
+    ///   - message: The message to attach to the `XCTAssertNotEqual` failure, if a match is found
+    ///   - file: The calling file. Used for showing context-appropriate unit test failures in Xcode
+    ///   - line: The calling line of code. Used for showing context-appropriate unit test failures in Xcode
+    /// - Returns: A chainable `PublisherExpectation` that matches the contextual upstream `Publisher` type
+    func expectNot(_ expected: UpstreamPublisher.Output, message: String? = nil, file: StaticString = #filePath, line: UInt = #line) -> Self where UpstreamPublisher.Output: Equatable {
+        let expectation = LocatableTestExpectation(description: "expectNot(\(expected))", file: file, line: line)
+        expectations.append(expectation)
+        upstreamPublisher
+            .sink { completion in
+            } receiveValue: { value in
+                XCTAssertNotEqual(expected, value, message ?? "", file: file, line: line)
+                expectation.fulfill()
+            }
+            .store(in: &cancellables)
+        return self
+    }
+    
     /// Invokes the provided assertion closure on every value emitted by the `Publisher`.
     /// Useful for calling `XCTAssert` variants where custom evaluation is required
     /// - Parameters:
@@ -136,6 +156,17 @@ public extension Publisher {
     /// - Returns: A chainable `PublisherExpectation` that matches the contextual upstream `Publisher` type
     func expect(_ expected: Output, message: String? = nil, file: StaticString = #filePath, line: UInt = #line) -> PublisherExpectation<Self> where Output: Equatable {
         .init(upstream: self).expect(expected, message: message, file: file, line: line)
+    }
+    
+    /// Asserts that a value will be emitted by the `Publisher` and that it does NOT match the provided `Equatable`
+    /// - Parameters:
+    ///   - expected: The `Equatable` value NOT expected from the `Publisher`
+    ///   - message: The message to attach to the `XCTAssertNotEqual` failure, if a match is found
+    ///   - file: The calling file. Used for showing context-appropriate unit test failures in Xcode
+    ///   - line: The calling line of code. Used for showing context-appropriate unit test failures in Xcode
+    /// - Returns: A chainable `PublisherExpectation` that matches the contextual upstream `Publisher` type
+    func expectNot(_ expected: Output, message: String? = nil, file: StaticString = #filePath, line: UInt = #line) -> PublisherExpectation<Self> where Output: Equatable {
+        .init(upstream: self).expectNot(expected, message: message, file: file, line: line)
     }
     
     /// Invokes the provided assertion closure on every value emitted by the `Publisher`.
