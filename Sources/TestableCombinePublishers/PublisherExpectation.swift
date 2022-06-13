@@ -188,24 +188,6 @@ public extension PublisherExpectation {
             .store(in: &cancellables)
         return self
     }
-    
-    /// Asserts that the `Publisher` data stream completes with a success status (`.finished`)
-    /// - Parameters:
-    ///   - file: The calling file. Used for showing context-appropriate unit test failures in Xcode
-    ///   - line: The calling line of code. Used for showing context-appropriate unit test failures in Xcode
-    /// - Returns: A chainable `PublisherExpectation` that matches the contextual upstream `Publisher` type
-    func expectSuccess(file: StaticString = #filePath, line: UInt = #line) -> Self {
-        let expectation = LocatableTestExpectation(description: "expectSuccess()", file: file, line: line)
-        expectations.append(expectation)
-        upstreamPublisher
-            .sink { completion in
-                if case .finished = completion {
-                    expectation.fulfill()
-                }
-            } receiveValue: { value in }
-            .store(in: &cancellables)
-        return self
-    }
 }
 
 public extension Publisher {
@@ -229,6 +211,32 @@ public extension Publisher {
     func expectCompletion(_ assertion: @escaping (Subscribers.Completion<Failure>) -> Void, file: StaticString = #filePath, line: UInt = #line) -> PublisherExpectation<Self> {
         .init(upstream: self).expectCompletion(assertion, file: file, line: line)
     }
+}
+
+// MARK: - Receive Success Expectations
+
+public extension PublisherExpectation {
+    
+    /// Asserts that the `Publisher` data stream completes with a success status (`.finished`)
+    /// - Parameters:
+    ///   - file: The calling file. Used for showing context-appropriate unit test failures in Xcode
+    ///   - line: The calling line of code. Used for showing context-appropriate unit test failures in Xcode
+    /// - Returns: A chainable `PublisherExpectation` that matches the contextual upstream `Publisher` type
+    func expectSuccess(file: StaticString = #filePath, line: UInt = #line) -> Self {
+        let expectation = LocatableTestExpectation(description: "expectSuccess()", file: file, line: line)
+        expectations.append(expectation)
+        upstreamPublisher
+            .sink { completion in
+                if case .finished = completion {
+                    expectation.fulfill()
+                }
+            } receiveValue: { value in }
+            .store(in: &cancellables)
+        return self
+    }
+}
+
+public extension Publisher {
     
     /// Asserts that the `Publisher` data stream completes with a success status (`.finished`)
     /// - Parameters:
