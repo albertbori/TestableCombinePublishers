@@ -114,6 +114,5 @@ func testNonEquatableFailure() {
 
 ## Upcoming Features
 
-- Support `Publisher`s that expect that no values are emitted before completing
 - Enforcing order of expectations
 

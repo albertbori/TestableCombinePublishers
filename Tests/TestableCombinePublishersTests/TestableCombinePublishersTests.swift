@@ -343,6 +343,28 @@ final class TestableCombinePublishersTests: XCTestCase {
             .expect(["cool", "neat"])
             .waitForExpectations(timeout: 1)
     }
+    
+    func testExpectNoValueAndCompletion() {
+        [String]()
+            .publisher
+            .expectNoValue()
+            .expectCompletion()
+            .waitForExpectations(timeout: 1)
+    }
+    
+    func testExpectNoValueAndCompletionFail() {
+        XCTExpectFailure("Incorrect assertion should fail")
+        CurrentValueSubject<String, Never>("cool")
+            .expectNoValue()
+            .expectCompletion()
+            .waitForExpectations(timeout: 1)
+        
+        XCTExpectFailure("Incorrect assertion should fail")
+        PassthroughSubject<String, Never>()
+            .expectNoValue()
+            .expectCompletion()
+            .waitForExpectations(timeout: 1)
+    }
 }
 
 extension TestableCombinePublishersTests {
