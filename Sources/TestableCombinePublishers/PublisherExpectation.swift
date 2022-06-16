@@ -48,7 +48,7 @@ public final class PublisherExpectation<UpstreamPublisher: Publisher> {
     ///   - file: The calling file. Used for showing context-appropriate unit test failures in Xcode
     ///   - line: The calling line of code. Used for showing context-appropriate unit test failures in Xcode
     public func waitForExpectations(timeout: TimeInterval, enforceOrder: Bool = false, file: StaticString = #filePath, line: UInt = #line) {
-        let result = XCTWaiter(delegate: delegate).wait(for: expectations, timeout: timeout, enforceOrder: false)
+        let result = XCTWaiter(delegate: delegate).wait(for: expectations, timeout: timeout, enforceOrder: enforceOrder)
         switch result {
         case .completed:
             break

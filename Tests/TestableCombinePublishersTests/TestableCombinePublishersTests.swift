@@ -387,23 +387,24 @@ final class TestableCombinePublishersTests: XCTestCase {
             .waitForExpectations(timeout: 1)
     }
     
-    // TODO: This is currently failing. The expectations should respect sequence, if possible.
     func testOrderFail() {
         XCTExpectFailure("Incorrect assertion should fail")
-        ["cool"]
-            .publisher
+        let publisher = PassthroughSubject<String, Never>()
+        let test: PublisherExpectation = publisher
             .expectSuccess()
             .expect("cool")
-            .waitForExpectations(timeout: 1)
+        publisher.send("cool")
+        publisher.send(completion: .finished)
+        test.waitForExpectations(timeout: 1, enforceOrder: true)
     }
     
     func testDeferredWait() {
         let currentValueSubject = CurrentValueSubject<String, Never>("cool")
-        let expectation = currentValueSubject
+        let test = currentValueSubject
             .collect(2)
             .expect(["cool", "neat"])
         currentValueSubject.value = "neat"
-        expectation.waitForExpectations(timeout: 1)
+        test.waitForExpectations(timeout: 1)
     }
     
     func testMultiThreadedExpectation() {

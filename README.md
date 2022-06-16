@@ -51,10 +51,10 @@ func testPublisherFailure() {
 For a `Publisher` that is expected to emit a value after being acted upon externally
 ```swift
 func testLoadablePublisher() {
-    let expectation = someDataSource.publisher
+    let test = someDataSource.publisher
         .expect(someEquatableValue)
     someDataSource.load()
-    expectation.waitForExpectations(timeout: 1)
+    test.waitForExpectations(timeout: 1)
 }
 ```
 
@@ -114,5 +114,5 @@ func testNonEquatableFailure() {
 
 ## Upcoming Features
 
-- Enforcing order of expectations
+- Support for working with `Scheduler`s to avoid relying on timeouts
 
