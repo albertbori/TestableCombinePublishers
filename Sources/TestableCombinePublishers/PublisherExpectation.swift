@@ -124,6 +124,25 @@ public extension PublisherExpectation {
         return self
     }
     
+    /// Asserts that no value will be emitted by the `Publisher`.
+    /// ⚠️ This will wait for the full timeout in `waitForExpectations(timeout:)` 
+    /// - Parameters:
+    ///   - file: The calling file. Used for showing context-appropriate unit test failures in Xcode
+    ///   - line: The calling line of code. Used for showing context-appropriate unit test failures in Xcode
+    /// - Returns: A chainable `PublisherExpectation` that matches the contextual upstream `Publisher` type
+    func expectNoValue(file: StaticString = #filePath, line: UInt = #line) -> Self {
+        let expectation = LocatableTestExpectation(description: "expectNoValue()", file: file, line: line)
+        expectation.isInverted = true
+        expectations.append(expectation)
+        upstreamPublisher
+            .sink { completion in
+            } receiveValue: { value in
+                expectation.fulfill()
+            }
+            .store(in: &cancellables)
+        return self
+    }
+    
     /// Invokes the provided assertion closure on every value emitted by the `Publisher`.
     /// Useful for calling `XCTAssert` variants where custom evaluation is required
     /// - Parameters:
@@ -167,6 +186,16 @@ public extension Publisher {
     /// - Returns: A chainable `PublisherExpectation` that matches the contextual upstream `Publisher` type
     func expectNot(_ expected: Output, message: String? = nil, file: StaticString = #filePath, line: UInt = #line) -> PublisherExpectation<Self> where Output: Equatable {
         .init(upstream: self).expectNot(expected, message: message, file: file, line: line)
+    }
+    
+    /// Asserts that no value will be emitted by the `Publisher`.
+    /// ⚠️ This will wait for the full timeout in `waitForExpectations(timeout:)`
+    /// - Parameters:
+    ///   - file: The calling file. Used for showing context-appropriate unit test failures in Xcode
+    ///   - line: The calling line of code. Used for showing context-appropriate unit test failures in Xcode
+    /// - Returns: A chainable `PublisherExpectation` that matches the contextual upstream `Publisher` type
+    func expectNoValue(file: StaticString = #filePath, line: UInt = #line) -> PublisherExpectation<Self> {
+        .init(upstream: self).expectNoValue(file: file, line: line)
     }
     
     /// Invokes the provided assertion closure on every value emitted by the `Publisher`.
