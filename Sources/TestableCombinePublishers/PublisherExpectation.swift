@@ -84,7 +84,7 @@ public final class PublisherExpectation<UpstreamPublisher: Publisher> {
 
 public extension PublisherExpectation {
     
-    /// Asserts that the provided `Equatable` value will be emitted by the `Publisher`
+    /// Asserts that the provided `Equatable` value will be emitted by the `Publisher` one or more times
     /// - Parameters:
     ///   - expected: The `Equatable` value expected from the `Publisher`
     ///   - message: The message to attach to the `XCTAssertEqual` failure, if a mismatch is found
@@ -99,6 +99,34 @@ public extension PublisherExpectation {
             } receiveValue: { value in
                 XCTAssertEqual(expected, value, message ?? "", file: file, line: line)
                 expectation.fulfill()
+            }
+            .store(in: &cancellables)
+        return self
+    }
+    
+    /// Asserts that the provided `Equatable` value will be emitted by the `Publisher` exactly `count` times.
+    /// ⚠️ This will wait for the full timeout in `waitForExpectations(timeout:)`
+    /// - Parameters:
+    ///   - count: The exact number of values that should be emitted from the `Publisher`
+    ///   - expected: The `Equatable` value expected from the `Publisher`
+    ///   - message: The message to attach to the `XCTAssertEqual` failure, if a mismatch is found
+    ///   - file: The calling file. Used for showing context-appropriate unit test failures in Xcode
+    ///   - line: The calling line of code. Used for showing context-appropriate unit test failures in Xcode
+    /// - Returns: A chainable `PublisherExpectation` that matches the contextual upstream `Publisher` type
+    func expectExactly(_ count: Int, of expected: UpstreamPublisher.Output, message: String? = nil, file: StaticString = #filePath, line: UInt = #line) -> Self where UpstreamPublisher.Output: Equatable {
+        let minExpectation = LocatableTestExpectation(description: "min expectExactly(\(count), of: \(expected))", file: file, line: line)
+        minExpectation.expectedFulfillmentCount = count
+        let maxExpectation = LocatableTestExpectation(description: "max expectExactly(\(count), of: \(expected))", file: file, line: line)
+        maxExpectation.isInverted = true
+        maxExpectation.expectedFulfillmentCount = count + 1
+        expectations.append(minExpectation)
+        expectations.append(maxExpectation)
+        upstreamPublisher
+            .sink { completion in
+            } receiveValue: { value in
+                XCTAssertEqual(expected, value, message ?? "", file: file, line: line)
+                minExpectation.fulfill()
+                maxExpectation.fulfill()
             }
             .store(in: &cancellables)
         return self
@@ -143,7 +171,7 @@ public extension PublisherExpectation {
         return self
     }
     
-    /// Invokes the provided assertion closure on every value emitted by the `Publisher`.
+    /// Invokes the provided assertion closure on every value emitted by the `Publisher`, expecting at least one `Output` value.
     /// Useful for calling `XCTAssert` variants where custom evaluation is required
     /// - Parameters:
     ///   - assertion: The assertion to be performed on each emitted value of the `Publisher`
@@ -162,6 +190,34 @@ public extension PublisherExpectation {
             .store(in: &cancellables)
         return self
     }
+    
+    /// Invokes the provided assertion closure on every value emitted by the `Publisher`, expecting exactly `count` values emitted.
+    /// ⚠️ This will wait for the full timeout in `waitForExpectations(timeout:)`
+    /// Useful for calling `XCTAssert` variants where custom evaluation is required
+    /// - Parameters:
+    ///   - count: The exact number of values that should be emitted from the `Publisher`
+    ///   - assertion: The assertion to be performed on each emitted value of the `Publisher`
+    ///   - file: The calling file. Used for showing context-appropriate unit test failures in Xcode
+    ///   - line: The calling line of code. Used for showing context-appropriate unit test failures in Xcode
+    /// - Returns: A chainable `PublisherExpectation` that matches the contextual upstream `Publisher` type
+    func expectExactly(_ count: Int, _ assertion: @escaping (UpstreamPublisher.Output) -> Void, file: StaticString = #filePath, line: UInt = #line) -> Self {
+        let minExpectation = LocatableTestExpectation(description: "min expectExactly(\(count) assertion)", file: file, line: line)
+        minExpectation.expectedFulfillmentCount = count
+        let maxExpectation = LocatableTestExpectation(description: "max expectExactly(\(count) assertion)", file: file, line: line)
+        maxExpectation.isInverted = true
+        maxExpectation.expectedFulfillmentCount = count + 1
+        expectations.append(minExpectation)
+        expectations.append(maxExpectation)
+        upstreamPublisher
+            .sink { completion in
+            } receiveValue: { value in
+                assertion(value)
+                minExpectation.fulfill()
+                maxExpectation.fulfill()
+            }
+            .store(in: &cancellables)
+        return self
+    }
 }
 
 public extension Publisher {
@@ -175,6 +231,19 @@ public extension Publisher {
     /// - Returns: A chainable `PublisherExpectation` that matches the contextual upstream `Publisher` type
     func expect(_ expected: Output, message: String? = nil, file: StaticString = #filePath, line: UInt = #line) -> PublisherExpectation<Self> where Output: Equatable {
         .init(upstream: self).expect(expected, message: message, file: file, line: line)
+    }
+        
+    /// Asserts that the provided `Equatable` value will be emitted by the `Publisher` exactly `count` times.
+    /// ⚠️ This will wait for the full timeout in `waitForExpectations(timeout:)`
+    /// - Parameters:
+    ///   - count: The exact number of values that should be emitted from the `Publisher`
+    ///   - expected: The `Equatable` value expected from the `Publisher`
+    ///   - message: The message to attach to the `XCTAssertEqual` failure, if a mismatch is found
+    ///   - file: The calling file. Used for showing context-appropriate unit test failures in Xcode
+    ///   - line: The calling line of code. Used for showing context-appropriate unit test failures in Xcode
+    /// - Returns: A chainable `PublisherExpectation` that matches the contextual upstream `Publisher` type
+    func expectExactly(_ count: Int, of expected: Output, message: String? = nil, file: StaticString = #filePath, line: UInt = #line) -> PublisherExpectation<Self> where Output: Equatable {
+        .init(upstream: self).expectExactly(count, of: expected, message: message, file: file, line: line)
     }
     
     /// Asserts that a value will be emitted by the `Publisher` and that it does NOT match the provided `Equatable`
@@ -207,6 +276,19 @@ public extension Publisher {
     /// - Returns: A chainable `PublisherExpectation` that matches the contextual upstream `Publisher` type
     func expect(_ assertion: @escaping (Output) -> Void, file: StaticString = #filePath, line: UInt = #line) -> PublisherExpectation<Self> {
         .init(upstream: self).expect(assertion, file: file, line: line)
+    }
+    
+    /// Invokes the provided assertion closure on every value emitted by the `Publisher`, expecting exactly `count` values emitted.
+    /// ⚠️ This will wait for the full timeout in `waitForExpectations(timeout:)`
+    /// Useful for calling `XCTAssert` variants where custom evaluation is required
+    /// - Parameters:
+    ///   - count: The exact number of values that should be emitted from the `Publisher`
+    ///   - assertion: The assertion to be performed on each emitted value of the `Publisher`
+    ///   - file: The calling file. Used for showing context-appropriate unit test failures in Xcode
+    ///   - line: The calling line of code. Used for showing context-appropriate unit test failures in Xcode
+    /// - Returns: A chainable `PublisherExpectation` that matches the contextual upstream `Publisher` type
+    func expectExactly(_ count: Int, _ assertion: @escaping (Output) -> Void, file: StaticString = #filePath, line: UInt = #line) -> PublisherExpectation<Self> {
+        .init(upstream: self).expectExactly(count, assertion, file: file, line: line)
     }
 }
 

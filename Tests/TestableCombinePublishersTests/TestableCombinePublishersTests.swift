@@ -31,14 +31,19 @@ final class TestableCombinePublishersTests: XCTestCase {
     
     // MARK: - Receive Value Expectations
     
-    func testSingleEquatableValue() {
+    func testExpectEquatableValue() {
         ["cool"]
+            .publisher
+            .expect("cool")
+            .waitForExpectations(timeout: 1)
+        
+        ["cool", "cool", "cool"]
             .publisher
             .expect("cool")
             .waitForExpectations(timeout: 1)
     }
     
-    func testSingleEquatableValueFail() {
+    func testExpectEquatableValueFail() {
         XCTExpectFailure("Incorrect assertion should fail")
         ["cool"]
             .publisher
@@ -52,14 +57,47 @@ final class TestableCombinePublishersTests: XCTestCase {
             .waitForExpectations(timeout: 1)
     }
     
-    func testExpectNotValue() {
+    func testExpectExactlyCountOfEquatableValues() {
+        ["cool", "cool"]
+            .publisher
+            .expectExactly(2, of: "cool")
+            .waitForExpectations(timeout: 1)
+    }
+    
+    func testExpectExactlyCountOfEquatableValuesFail() {
+        XCTExpectFailure("Incorrect assertion should fail")
+        ["cool"]
+            .publisher
+            .expectExactly(2, of: "neat")
+            .waitForExpectations(timeout: 1)
+        
+        XCTExpectFailure("Incorrect assertion should fail")
+        [String]()
+            .publisher
+            .expectExactly(2, of: "neat")
+            .waitForExpectations(timeout: 1)
+        
+        XCTExpectFailure("Incorrect assertion should fail")
+        ["cool"]
+            .publisher
+            .expectExactly(2, of: "cool")
+            .waitForExpectations(timeout: 1)
+        
+        XCTExpectFailure("Incorrect assertion should fail")
+        ["cool", "cool", "cool"]
+            .publisher
+            .expectExactly(2, of: "cool")
+            .waitForExpectations(timeout: 1)
+    }
+    
+    func testExpectNotEquatableValue() {
         ["neat"]
             .publisher
             .expectNot("cool")
             .waitForExpectations(timeout: 1)
     }
     
-    func testExpectNotFail() {
+    func testExpectNotEquatableValueFail() {
         XCTExpectFailure("Incorrect assertion should fail")
         ["cool"]
             .publisher
@@ -88,7 +126,7 @@ final class TestableCombinePublishersTests: XCTestCase {
             .waitForExpectations(timeout: 1)
     }
     
-    func testSingleValueClosure() async {
+    func testExpectValueClosure() async {
         ["cool"]
             .publisher
             .expect({ XCTAssertEqual("cool", $0) })
@@ -96,7 +134,7 @@ final class TestableCombinePublishersTests: XCTestCase {
 
     }
     
-    func testSingleValueClosureFailure() async {
+    func testExpectValueClosureFail() async {
         XCTExpectFailure("Incorrect assertion should fail")
         ["cool"]
             .publisher
@@ -111,6 +149,41 @@ final class TestableCombinePublishersTests: XCTestCase {
 
     }
     
+    func testExpectExactlyCountOfValueClosure() async {
+        ["cool", "cool"]
+            .publisher
+            .expectExactly(2, { XCTAssertEqual("cool", $0) })
+            .waitForExpectations(timeout: 1)
+
+    }
+    
+    func testExpectExactlyCountOfValueClosureFail() async {
+        XCTExpectFailure("Incorrect assertion should fail")
+        ["cool", "cool"]
+            .publisher
+            .expectExactly(2, { XCTAssertEqual("neat", $0) })
+            .waitForExpectations(timeout: 1)
+        
+        XCTExpectFailure("Incorrect assertion should fail")
+        ["cool"]
+            .publisher
+            .expectExactly(2, { XCTAssertEqual("cool", $0) })
+            .waitForExpectations(timeout: 1)
+        
+        XCTExpectFailure("Incorrect assertion should fail")
+        ["cool", "cool", "cool"]
+            .publisher
+            .expectExactly(2, { XCTAssertEqual("cool", $0) })
+            .waitForExpectations(timeout: 1)
+        
+        XCTExpectFailure("Incorrect assertion should fail")
+        ["cool", "cool", "neat"]
+            .publisher
+            .expectExactly(2, { XCTAssertEqual("cool", $0) })
+            .waitForExpectations(timeout: 1)
+
+    }
+    
     func testMulitpleEquatableValues() async {
         ["cool", "neat", "awesome"]
             .publisher
@@ -119,7 +192,7 @@ final class TestableCombinePublishersTests: XCTestCase {
             .waitForExpectations(timeout: 1)
     }
     
-    func testMulitpleEquatableValuesFailure() async {
+    func testMulitpleEquatableValuesFail() async {
         XCTExpectFailure("Incorrect assertion should fail")
         ["cool", "neat", "awesome"]
             .publisher
@@ -143,7 +216,7 @@ final class TestableCombinePublishersTests: XCTestCase {
             .waitForExpectations(timeout: 1)
     }
     
-    func testMulitpleValuesClosureFailure() async {
+    func testMulitpleValuesClosureFail() async {
         XCTExpectFailure("Incorrect assertion should fail")
         ["cool", "neat", "awesome"]
             .publisher
@@ -161,7 +234,7 @@ final class TestableCombinePublishersTests: XCTestCase {
             .waitForExpectations(timeout: 1)
     }
     
-    func testCompletionFailure() {
+    func testCompletionFail() {
         XCTExpectFailure("Incorrect assertion should fail")
         PassthroughSubject<Void, Never>()
             .expectCompletion()
@@ -174,7 +247,7 @@ final class TestableCombinePublishersTests: XCTestCase {
             .waitForExpectations(timeout: 1)
     }
     
-    func testNoCompletionFailure() {
+    func testNoCompletionFail() {
         XCTExpectFailure("Incorrect assertion should fail")
         [Int]()
             .publisher
@@ -189,7 +262,7 @@ final class TestableCombinePublishersTests: XCTestCase {
             .waitForExpectations(timeout: 1)
     }
     
-    func testCompletionClosureFailure() {
+    func testCompletionClosureFail() {
         XCTExpectFailure("Incorrect assertion should fail")
         Fail<Void, MockError>(error: MockError.someProblem)
             .expectCompletion({ XCTAssertEqual($0, .finished) })
@@ -210,7 +283,7 @@ final class TestableCombinePublishersTests: XCTestCase {
             .waitForExpectations(timeout: 1)
     }
     
-    func testSuccessCompletionFailure() {
+    func testSuccessCompletionFail() {
         XCTExpectFailure("Incorrect assertion should fail")
         PassthroughSubject<Void, Never>()
             .expectSuccess()
@@ -225,7 +298,7 @@ final class TestableCombinePublishersTests: XCTestCase {
             .waitForExpectations(timeout: 1)
     }
     
-    func testFailureCompletionFailure() {
+    func testFailureCompletionFail() {
         XCTExpectFailure("Incorrect assertion should fail")
         PassthroughSubject<Void, MockError>()
             .expectFailure()
@@ -238,7 +311,7 @@ final class TestableCombinePublishersTests: XCTestCase {
             .waitForExpectations(timeout: 1)
     }
     
-    func testFailureValueCompletionFailure() {
+    func testFailureValueCompletionFail() {
         XCTExpectFailure("Incorrect assertion should fail")
         PassthroughSubject<Void, MockError>()
             .expectFailure(MockError.someProblem)
@@ -256,7 +329,7 @@ final class TestableCombinePublishersTests: XCTestCase {
             .waitForExpectations(timeout: 1)
     }
     
-    func testNotFailureValueCompletionFailure() {
+    func testNotFailureValueCompletionFail() {
         XCTExpectFailure("Incorrect assertion should fail")
         PassthroughSubject<Void, MockError>()
             .expectNotFailure(MockError.someProblem)
@@ -274,7 +347,7 @@ final class TestableCombinePublishersTests: XCTestCase {
             .waitForExpectations(timeout: 1)
     }
     
-    func testFailureClosureCompletionFailure() {
+    func testFailureClosureCompletionFail() {
         XCTExpectFailure("Incorrect assertion should fail")
         Fail<Void, MockError>(error: MockError.someProblem)
             .expectFailure({ XCTAssertEqual($0, .otherProblem) })
@@ -315,7 +388,7 @@ final class TestableCombinePublishersTests: XCTestCase {
     }
     
     // TODO: This is currently failing. The expectations should respect sequence, if possible.
-    func testOrderFailure() {
+    func testOrderFail() {
         XCTExpectFailure("Incorrect assertion should fail")
         ["cool"]
             .publisher
