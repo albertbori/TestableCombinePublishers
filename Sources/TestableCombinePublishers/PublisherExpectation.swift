@@ -47,8 +47,8 @@ public final class PublisherExpectation<UpstreamPublisher: Publisher> {
     ///   - enforceOrder: (Not currently working) Asserts that the expectations will be fulfilled in order of declaration or a failure will be emitted
     ///   - file: The calling file. Used for showing context-appropriate unit test failures in Xcode
     ///   - line: The calling line of code. Used for showing context-appropriate unit test failures in Xcode
-    public func waitForExpectations(timeout: TimeInterval, enforceOrder: Bool = true, file: StaticString = #filePath, line: UInt = #line) {
-        let result = XCTWaiter(delegate: delegate).wait(for: expectations, timeout: timeout, enforceOrder: enforceOrder)
+    public func waitForExpectations(timeout: TimeInterval, enforceOrder: Bool = false, file: StaticString = #filePath, line: UInt = #line) {
+        let result = XCTWaiter(delegate: delegate).wait(for: expectations, timeout: timeout, enforceOrder: false)
         switch result {
         case .completed:
             break
