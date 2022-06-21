@@ -360,6 +360,19 @@ final class TestableCombinePublishersTests: XCTestCase {
         
     }
     
+    func testVoid() {
+        Just<Void>(Void())
+            .expectVoid()
+            .waitForExpectations(timeout: 1)
+    }
+    
+    func testVoidFail() {
+        XCTExpectFailure("Incorrect assertion should fail")
+        Empty<Void, Never>(completeImmediately: true)
+            .expectVoid()
+            .waitForExpectations(timeout: 1)
+    }
+    
     // MARK: - Misc Tests
     
     func testMultipleExpectations() {

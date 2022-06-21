@@ -549,6 +549,40 @@ public extension Publisher {
     }
 }
 
+// MARK: - Void Publisher Expectations
+
+public extension PublisherExpectation where UpstreamPublisher.Output == Void {
+    
+    /// Asserts that `Void` will be emitted by the `Publisher` one or more times
+    /// - Parameters:
+    ///   - file: The calling file. Used for showing context-appropriate unit test failures in Xcode
+    ///   - line: The calling line of code. Used for showing context-appropriate unit test failures in Xcode
+    /// - Returns: A chainable `PublisherExpectation` that matches the contextual upstream `Publisher` type
+    func expectVoid(file: StaticString = #filePath, line: UInt = #line) -> Self {
+        let expectation = LocatableTestExpectation(description: "expectVoid()", file: file, line: line)
+        expectations.append(expectation)
+        upstreamPublisher
+            .sink { completion in
+            } receiveValue: { value in
+                expectation.fulfill()
+            }
+            .store(in: &cancellables)
+        return self
+    }
+}
+
+public extension Publisher where Output == Void {
+    
+    /// Asserts that `Void` will be emitted by the `Publisher` one or more times
+    /// - Parameters:
+    ///   - file: The calling file. Used for showing context-appropriate unit test failures in Xcode
+    ///   - line: The calling line of code. Used for showing context-appropriate unit test failures in Xcode
+    /// - Returns: A chainable `PublisherExpectation` that matches the contextual upstream `Publisher` type
+    func expectVoid(file: StaticString = #filePath, line: UInt = #line) -> PublisherExpectation<Self> {
+        .init(upstream: self).expectVoid(file: file, line: line)
+    }
+}
+
 // MARK: - WaiterDelegate
 
 extension PublisherExpectation {
