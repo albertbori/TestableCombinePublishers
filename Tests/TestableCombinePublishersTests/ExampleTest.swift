@@ -44,4 +44,8 @@ class ExampleTest: XCTestCase {
             .waitForExpectations(timeout: 1)
     }
 
+    func testPassAsync() async throws {
+        let value = try await CurrentValueSubject<String, Error>("foo").awaitFirstValue()
+        XCTAssertEqual(value, "foo")
+    }
 }
