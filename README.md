@@ -28,7 +28,7 @@ func testSingleValueCompletingPublisher() {
 }
 
 func testSingleValueCompletingPublisher() async throws {
-    let value = somePublisher.awaitFirstValue()
+    let value = try await somePublisher.awaitFirstValue()
     XCTAssertEqual(value, someEquatableValue)
 }
 ```
