@@ -1,5 +1,5 @@
 //
-//  TestableCombinePublishersTests.swift
+//  ExampleTest.swift
 //  TestableCombinePublishers
 //
 //  Copyright (c) 2022 Albert Bori
