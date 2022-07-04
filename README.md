@@ -26,6 +26,11 @@ func testSingleValueCompletingPublisher() {
         .expectSuccess()
         .waitForExpectations(timeout: 1)
 }
+
+func testSingleValueCompletingPublisher() async throws {
+    let value = somePublisher.awaitFirstValue()
+    XCTAssertEqual(value, someEquatableValue)
+}
 ```
 
 For a `Publisher` that is expected to emit multiple values, but is expected to not complete
