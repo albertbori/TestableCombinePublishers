@@ -30,14 +30,16 @@ import XCTest
 public extension Publisher {
     
     /// Asynchronous function for getting the first published value.
+    /// - Parameter timeout: Number of nanoseconds to wait before timing out the combine stream. Defaults to 1 second.
     /// - Returns: The first published value
     /// - Throws: An error from a `Publisher` or an ``AsyncPublisherError`` if the publisher finishes without emitting a value.
     /// - Note: The `Publisher` will be canceled after the first value is emitted.
-    func awaitFirstValue() async throws -> Output {
+    func awaitFirstValue(timeout: UInt64 = NSEC_PER_SEC) async throws -> Output {
         try await withCheckedThrowingContinuation { continuation in
             var cancellable: AnyCancellable?
             var finishedWithoutValue = true
             cancellable = first()
+                .timeout(.nanoseconds(Int(timeout)), scheduler: DispatchQueue.main)
                 .sink { result in
                     switch result {
                     case .finished:
@@ -60,4 +62,6 @@ public extension Publisher {
 public enum AsyncPublisherError: Error {
     /// Throws when a `Publisher` is finished but no value was emitted from the `Publisher`
     case finishedWithoutValue
+    /// Throws when a `Publisher` does not return it's value before the timeout
+    case timeout
 }

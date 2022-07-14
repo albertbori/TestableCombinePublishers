@@ -56,6 +56,16 @@ class AsyncPublisherTest: XCTestCase {
         }
     }
     
+    func testPublisherNeverEmitsValue() async throws {
+        do {
+            let subject = PassthroughSubject<String, Error>()
+            _ = try await subject.awaitFirstValue()
+            XCTFail("This should not pass")
+        } catch let error as AsyncPublisherError {
+            XCTAssertEqual(error, .finishedWithoutValue)
+        }
+    }
+    
     func testPass() async throws {
         let value = try await CurrentValueSubject<String, Error>("foo").awaitFirstValue()
         XCTAssertEqual(value, "foo")
