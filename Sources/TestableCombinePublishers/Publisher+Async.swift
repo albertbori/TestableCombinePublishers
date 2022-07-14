@@ -62,6 +62,4 @@ public extension Publisher {
 public enum AsyncPublisherError: Error {
     /// Throws when a `Publisher` is finished but no value was emitted from the `Publisher`
     case finishedWithoutValue
-    /// Throws when a `Publisher` does not return it's value before the timeout
-    case timeout
 }
