@@ -116,3 +116,67 @@ func testNonEquatableFailure() {
 
 - Support for working with `Scheduler`s to avoid relying on timeouts
 
+## AutomaticallyEquatable
+
+When you have a complex type or type graph that you would like to compare for unit testing purposes, you can use this protocol by extending your type to conform to it.
+This will drastically reduce the volume of code required to make unit test equality assertions on custom types.
+It also negates the need to rely on custom `Equatable` implementations.
+(Custom `Equatable` implementations come with the risk that future changes to the type may invalidate the equatable implementation without warning.)
+
+**Important Disclosures**
+
+This is an imperfect and assuming implementation of `Equatable`. It should not be used without understanding the following concepts.
+
+The implementation:
+
+- Cannot anticipate the consequences of observing a calculated property. (ie, code that changes the state of data when a property is observed).
+- Cannot respect custom `Equatable` implementations of the values being compared or any of the subsequent members. It will use its own comparison logic instead.
+- Skips over members that cannot be reasonably compared, such as closures. These are assumed to be equal.
+- Does not support recursive evaluation of reflexive types (it will crash if a property on a type references itself)
+
+## Usage
+
+You can conform to the protocol with a single line of code:
+
+```swift
+class Baz {
+    let answer: Int
+    init(answer: Init) {
+        self.answer = answer
+    }
+}
+
+enum MyCustomType {
+    case foo
+    case bar(Baz)
+}
+
+extension MyCustomType: AutomaticallyEquatable { /*no-op*/ }
+```
+
+Then, you can compare two of `MyCustomType` using `expect(...), `==`, or an XCTest framework equality assertion.
+
+```swift
+somePublisher
+    .expect(MyCustomType.bar(Baz(answer: 42))
+    .waitForExpectations(timeout: 1)
+
+// or
+
+XCTAssertEqual(output, MyCustomType.bar(Baz(answer: 42))
+
+// or
+
+print(output == MyCustomType.bar(Baz(answer: 42)))
+```
+
+If you would like to see the comparison result, you can invoke the following directly to get a detailed result object:
+
+```swift
+switch MyCustomType.compare(foo, bar) {
+case .equal:
+    break
+case .unequal(let difference):
+    print(difference.debugDescription)
+}
+```
