@@ -3,25 +3,6 @@
 //  TestableCombinePublishers
 //
 //  Copyright (c) 2022 Albert Bori
-//
-//  Permission is hereby granted, free of charge, to any person obtaining a copy
-//  of this software and associated documentation files (the "Software"), to deal
-//  in the Software without restriction, including without limitation the rights
-//  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-//  copies of the Software, and to permit persons to whom the Software is
-//  furnished to do so, subject to the following conditions:
-//
-//  The above copyright notice and this permission notice shall be included in all
-//  copies or substantial portions of the Software.
-//
-//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-//  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-//  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-//  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-//  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-//  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-//  SOFTWARE.
-//
 
 import Combine
 import Foundation
@@ -97,7 +78,7 @@ public extension PublisherExpectation {
         upstreamPublisher
             .sink { completion in
             } receiveValue: { value in
-                XCTAssertEqual(expected, value, message ?? "", file: file, line: line)
+                XCTAssertEqual(expected, value, Self.buildFailureMessage(lhs: expected, rhs: value, message: message), file: file, line: line)
                 expectation.fulfill()
             }
             .store(in: &cancellables)
@@ -124,7 +105,7 @@ public extension PublisherExpectation {
         upstreamPublisher
             .sink { completion in
             } receiveValue: { value in
-                XCTAssertEqual(expected, value, message ?? "", file: file, line: line)
+                XCTAssertEqual(expected, value, Self.buildFailureMessage(lhs: expected, rhs: value, message: message), file: file, line: line)
                 minExpectation.fulfill()
                 maxExpectation.fulfill()
             }
@@ -145,7 +126,7 @@ public extension PublisherExpectation {
         upstreamPublisher
             .sink { completion in
             } receiveValue: { value in
-                XCTAssertNotEqual(expected, value, message ?? "", file: file, line: line)
+                XCTAssertNotEqual(expected, value, Self.buildFailureMessage(lhs: expected, rhs: value, message: message), file: file, line: line)
                 expectation.fulfill()
             }
             .store(in: &cancellables)
@@ -453,7 +434,7 @@ public extension PublisherExpectation {
         upstreamPublisher
             .sink { completion in
                 if case .failure(let error) = completion {
-                    XCTAssertEqual(failure, error, message ?? "", file: file, line: line)
+                    XCTAssertEqual(failure, error, Self.buildFailureMessage(lhs: failure, rhs: error, message: message), file: file, line: line)
                     expectation.fulfill()
                 }
             } receiveValue: { value in }
@@ -474,7 +455,7 @@ public extension PublisherExpectation {
         upstreamPublisher
             .sink { completion in
                 if case .failure(let error) = completion {
-                    XCTAssertNotEqual(failure, error, message ?? "", file: file, line: line)
+                    XCTAssertNotEqual(failure, error, Self.buildFailureMessage(lhs: failure, rhs: error, message: message), file: file, line: line)
                     expectation.fulfill()
                 }
             } receiveValue: { value in }
@@ -640,5 +621,20 @@ extension XCTestExpectation {
     /// Attempts to unbox or create a new `LocatableTestExpectation` instance with the provided file and line information    
     func asLocatableTestExpectation(file: StaticString, line: UInt) -> LocatableTestExpectation {
         (self as? LocatableTestExpectation) ?? .init(description: description, file: file, line: line)
+    }
+}
+
+//MARK: - XCTAssertEqual extension
+
+extension PublisherExpectation {
+    /// Combines the user-supplied error message (if any) with the automatic comparison output message.
+    /// This greatly improves the ability to find the specific mismatched property or element in large object graphs
+    static func buildFailureMessage<T: Equatable>(lhs: T, rhs: T, message: String?) -> String {
+        [
+            message,
+            RecursiveComparator.compare(lhs: lhs, rhs: rhs).debugDescription
+        ]
+        .compactMap({ $0 })
+        .joined(separator: " - ")
     }
 }
