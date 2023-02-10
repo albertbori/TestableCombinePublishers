@@ -19,10 +19,9 @@ import Foundation
 ///
 /// The implementation:
 ///
-/// - Cannot anticipate the consequences of observing a calculated property. (ie, code that changes the state of data when a property is observed).
+/// - Is subject to the consequences of observing a calculated property. (ie, code that changes the state of data when a property is observed).
 /// - Cannot respect custom `Equatable` implementations of the values being compared or any of the subsequent members. It will use its own comparison logic instead.
 /// - Skips over members that cannot be reasonably compared, such as closures. These are assumed to be equal.
-/// - Does not support recursive evaluation of reflexive types (it will crash if a property on a type references itself)
 ///
 /// ## Usage
 ///
@@ -74,6 +73,13 @@ public enum RecursiveComparator {
     }
     
     private static func compare(lhs: Any?, rhs: Any?, members: [String]) -> RecursiveComparatorResult {
+        // check for referential equality of objects
+        if let lhsObject = lhs as? AnyObject, let rhsObject = rhs as? AnyObject {
+            if lhsObject === rhsObject {
+                return .equal
+            }
+        }
+        
         // check each core value type
         if let lhs = lhs as? AnyHashable, let rhs = rhs as? AnyHashable {
             return lhs == rhs ? .equal : .unequal(.init(members: members, lhs: lhs, rhs: rhs))

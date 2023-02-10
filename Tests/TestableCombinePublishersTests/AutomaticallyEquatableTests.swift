@@ -35,6 +35,7 @@ final class AutomaticallyEquatableTests: XCTestCase {
         XCTAssertEqual(EnumSubject.int(.max), EnumSubject.int(.max))
         XCTAssertEqual(EnumSubject.int64(nil), EnumSubject.int64(nil))
         XCTAssertEqual(EnumSubject.int64(.max), EnumSubject.int64(.max))
+        XCTAssertEqual(EnumSubject.error(NSError(domain: "foo", code: -1)), EnumSubject.error(NSError(domain: "foo", code: -1)))
         XCTAssertEqual(EnumSubject.nestedEnum(nil), EnumSubject.nestedEnum(nil))
         XCTAssertEqual(EnumSubject.nestedEnum(.bool(true)), EnumSubject.nestedEnum(.bool(true)))
         XCTAssertEqual(EnumSubject.nestedEnum(.nestedEnum(nil)), EnumSubject.nestedEnum(.nestedEnum(nil)))
@@ -71,6 +72,8 @@ final class AutomaticallyEquatableTests: XCTestCase {
         XCTAssertNotEqual(EnumSubject.int(.min), EnumSubject.int(.max))
         XCTAssertNotEqual(EnumSubject.int64(nil), EnumSubject.int64(.max))
         XCTAssertNotEqual(EnumSubject.int64(.min), EnumSubject.int64(.max))
+        XCTAssertNotEqual(EnumSubject.error(NSError(domain: "foo", code: -1)), EnumSubject.error(NSError(domain: "bar", code: -1)))
+        XCTAssertNotEqual(EnumSubject.error(NSError(domain: "foo", code: -1)), EnumSubject.error(NSError(domain: "foo", code: -2)))
         XCTAssertNotEqual(EnumSubject.nestedEnum(nil), EnumSubject.nestedEnum(.bool(true)))
         XCTAssertNotEqual(EnumSubject.nestedEnum(.bool(true)), EnumSubject.nestedEnum(.bool(false)))
         XCTAssertNotEqual(EnumSubject.nestedEnum(.nestedEnum(nil)), EnumSubject.nestedEnum(.nestedEnum(.bool(true))))
@@ -162,6 +165,13 @@ final class AutomaticallyEquatableTests: XCTestCase {
         right.int64 = .max
         XCTAssertEqual(left, right)
         
+        left.error = NSError(domain: "foo", code: -1)
+        XCTAssertNotEqual(left, right)
+        right.error = NSError(domain: "bar", code: -1)
+        XCTAssertNotEqual(left, right)
+        right.error = NSError(domain: "foo", code: -1)
+        XCTAssertEqual(left, right)
+                
         left.nestedClass = .init()
         left.nestedClass?.string = "hi"
         XCTAssertNotEqual(left, right)
@@ -297,6 +307,13 @@ final class AutomaticallyEquatableTests: XCTestCase {
         right.int64 = .max
         XCTAssertEqual(left, right)
         
+        left.error = NSError(domain: "foo", code: -1)
+        XCTAssertNotEqual(left, right)
+        right.error = NSError(domain: "bar", code: -1)
+        XCTAssertNotEqual(left, right)
+        right.error = NSError(domain: "foo", code: -1)
+        XCTAssertEqual(left, right)
+                
         left.nestedClass = .init()
         left.nestedClass?.string = "hi"
         XCTAssertNotEqual(left, right)
@@ -410,6 +427,31 @@ final class AutomaticallyEquatableTests: XCTestCase {
         let person7 = PersonClass(name: "Baz", relationships: ["father": person1, "mother": person1])
         XCTAssertEqual(PersonClass.compare(lhs: person3, rhs: person7).debugDescription, "PersonClass.relationships.mother.name: Bar is not equal to Foo")
     }
+    
+    func testDirectlyRecursiveObjects() {
+        let selfReferencePerson = RecursivePerson(name: "Foo")
+        selfReferencePerson.parent = selfReferencePerson
+        XCTAssertEqual(selfReferencePerson, selfReferencePerson)
+    }
+    
+    func testIndirectlyRecursiveObjects() {
+        let parent = RecursivePerson(name: "Foo")
+        let child = RecursivePerson(name: "Bar", parent: parent)
+        parent.child = child
+        XCTAssertEqual(parent, parent)
+        XCTAssertNotEqual(parent, child)
+    }
+    
+    func testNestedIndirectlyRecursiveObjects() {
+        let parent = RecursivePerson(name: "Foo")
+        let child = RecursivePerson(name: "Bar", parent: parent)
+        parent.child = child
+        let container1 = RecursivePersonContainer(person1: parent, person2: child)
+        var container2 = RecursivePersonContainer(person1: parent, person2: child)
+        XCTAssertEqual(container1, container2)
+        container2 = RecursivePersonContainer(person1: parent, person2: parent)
+        XCTAssertNotEqual(container1, container2)
+    }
 }
 
 struct NestedEquatableConflict: AutomaticallyEquatable {
@@ -429,6 +471,7 @@ indirect enum EnumSubject: AutomaticallyEquatable {
     case string(String?)
     case int(Int?)
     case int64(Int64?)
+    case error(Error)
     case float(Float?)
     case double(Double?)
     case decimal(Decimal?)
@@ -457,6 +500,7 @@ struct StructSubject: AutomaticallyEquatable {
     var nestedStruct: InnerStruct?
     var tuple: (Int, String)?
     var closure: ((String) -> Bool)?
+    var error: Error?
     
     struct InnerStruct {
         var bool: Bool?
@@ -480,6 +524,7 @@ open class ClassSubject: AutomaticallyEquatable {
     var nestedStruct: StructSubject?
     var tuple: (Int, String)?
     var closure: ((String) -> Bool)?
+    var error: Error?
 }
 
 final class SubClassSubject: ClassSubject {
@@ -514,4 +559,20 @@ struct PersonStruct: AutomaticallyEquatable {
         case mother(PersonStruct)
         case father(PersonStruct)
     }
+}
+
+class RecursivePerson: AutomaticallyEquatable {
+    var name: String
+    var parent: RecursivePerson?
+    var child: RecursivePerson?
+    
+    init(name: String, parent: RecursivePerson? = nil, child: RecursivePerson? = nil) {
+        self.name = name
+        self.parent = parent
+        self.child = child
+    }
+}
+struct RecursivePersonContainer: AutomaticallyEquatable {
+    var person1: RecursivePerson
+    var person2: RecursivePerson
 }

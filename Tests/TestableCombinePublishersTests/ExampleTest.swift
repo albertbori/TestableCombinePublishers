@@ -29,11 +29,13 @@ import XCTest
 class ExampleTest: XCTestCase {
     
     func testFail() {
-        let publisher = CurrentValueSubject<String, Error>("foo")
-        publisher
-            .expect("bar")
-            .expectSuccess()
-            .waitForExpectations(timeout: 1)
+        XCTExpectFailure() {
+            let publisher = CurrentValueSubject<String, Error>("foo")
+            publisher
+                .expect("bar")
+                .expectSuccess()
+                .waitForExpectations(timeout: 1)
+        }
     }
     
     func testPass() {
