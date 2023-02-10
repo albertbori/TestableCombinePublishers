@@ -129,10 +129,9 @@ This is an imperfect and assuming implementation of `Equatable`. It should not b
 
 The implementation:
 
-- Cannot anticipate the consequences of observing a calculated property. (ie, code that changes the state of data when a property is observed).
+- Is subject to the consequences of observing a calculated property. (ie, code that changes the state of data when a property is observed).
 - Cannot respect custom `Equatable` implementations of the values being compared or any of the subsequent members. It will use its own comparison logic instead.
 - Skips over members that cannot be reasonably compared, such as closures. These are assumed to be equal.
-- Does not support recursive evaluation of reflexive types (it will crash if a property on a type references itself)
 
 ## Usage
 
