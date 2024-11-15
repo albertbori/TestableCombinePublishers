@@ -1,5 +1,5 @@
 //
-//  SwiftTesting_TestableCombinePublishersTests.swift
+//  SwiftTestingTestableCombinePublishersTests.swift
 //  TestableCombinePublishers
 //
 //  Created by Ethan van Heerden on 11/15/24.
@@ -10,7 +10,7 @@ import Combine
 import Foundation
 @testable import SwiftTestingTestableCombinePublishers
 
-final class SwiftTesting_TestableCombinePublishersTests {
+final class SwiftTestingTestableCombinePublishersTests {
     
     // MARK: - Receive Value Expectations
     
@@ -517,7 +517,7 @@ final class SwiftTesting_TestableCombinePublishersTests {
     }
 }
 
-extension SwiftTesting_TestableCombinePublishersTests {
+extension SwiftTestingTestableCombinePublishersTests {
     enum MockError: Error {
         case someProblem
         case otherProblem

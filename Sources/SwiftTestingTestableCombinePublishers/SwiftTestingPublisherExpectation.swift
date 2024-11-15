@@ -12,38 +12,6 @@ import Testing
 import Combine
 import TestableCombinePublishersUtility
 
-
-// MARK: - SwiftTestingExpectation
-
-final class SwiftTestingExpectation {
-    fileprivate let id: UUID
-    fileprivate let description: String
-    private let expectedFulfillmentCount: Int
-    fileprivate let isInverted: Bool
-    fileprivate let sourceLocation: SourceLocation
-    private var actualFulfillmentCount: Int = 0
-    
-    init(id: UUID = UUID(),
-         description: String,
-         expectedFulfillmentCount: Int = 1,
-         isInverted: Bool = false,
-         sourceLocation: SourceLocation) {
-        self.id = id
-        self.description = description
-        self.expectedFulfillmentCount = expectedFulfillmentCount
-        self.isInverted = isInverted
-        self.sourceLocation = sourceLocation
-    }
-    
-    fileprivate func fulfill() {
-        actualFulfillmentCount += 1
-    }
-    
-    fileprivate var isFulfilled: Bool {
-        return actualFulfillmentCount == expectedFulfillmentCount
-    }
-}
-
 /// Provides a convenient way for `Publisher`s to be unit tested.
 /// To use this, you can start by typing `expect` on any `Publisher` type.
 /// `waitForExpectations` must be called to evaluate the expectations.
