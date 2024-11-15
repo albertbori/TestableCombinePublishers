@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import TestableCombinePublishers
+import TestableCombinePublishersUtility
 import XCTest
 
 final class AutomaticallyEquatableTests: XCTestCase {
@@ -393,10 +393,10 @@ final class AutomaticallyEquatableTests: XCTestCase {
         XCTAssertEqual(person3, person3)
         
         // Collection count mismatch
-        XCTAssertEqual(PersonStruct.compare(lhs: person3, rhs: person4).debugDescription, "PersonStruct.relationships.1: mother(TestableCombinePublishersTests.PersonStruct(name: \"Bar\", relationships: [])) is not equal to nil")
+        XCTAssertEqual(PersonStruct.compare(lhs: person3, rhs: person4).debugDescription, "PersonStruct.relationships.1: mother(TestableCombinePublishersUtilityTests.PersonStruct(name: \"Bar\", relationships: [])) is not equal to nil")
         
         // Collection count mismatch reverse
-        XCTAssertEqual(PersonStruct.compare(lhs: person4, rhs: person3).debugDescription, "PersonStruct.relationships.1: nil is not equal to mother(TestableCombinePublishersTests.PersonStruct(name: \"Bar\", relationships: []))")
+        XCTAssertEqual(PersonStruct.compare(lhs: person4, rhs: person3).debugDescription, "PersonStruct.relationships.1: nil is not equal to mother(TestableCombinePublishersUtilityTests.PersonStruct(name: \"Bar\", relationships: []))")
         
         // Collection item mismatch
         let person5 = PersonStruct(name: "Baz", relationships: [.father(person1), .father(person1)])
@@ -414,14 +414,14 @@ final class AutomaticallyEquatableTests: XCTestCase {
 
         // Dictionary count mismatch
         let person5 = PersonClass(name: "Baz", relationships: ["father": person1])
-        XCTAssertEqual(PersonClass.compare(lhs: person3, rhs: person5).debugDescription, "PersonClass.relationships.mother: TestableCombinePublishersTests.PersonClass is not equal to nil")
+        XCTAssertEqual(PersonClass.compare(lhs: person3, rhs: person5).debugDescription, "PersonClass.relationships.mother: TestableCombinePublishersUtilityTests.PersonClass is not equal to nil")
         
         // Dictionary count mismatch reverse
-        XCTAssertEqual(PersonClass.compare(lhs: person5, rhs: person3).debugDescription, "PersonClass.relationships.mother: nil is not equal to TestableCombinePublishersTests.PersonClass")
+        XCTAssertEqual(PersonClass.compare(lhs: person5, rhs: person3).debugDescription, "PersonClass.relationships.mother: nil is not equal to TestableCombinePublishersUtilityTests.PersonClass")
 
         // Dictionary key mismatch
         let person6 = PersonClass(name: "Baz", relationships: ["father": person1, "sister": person2])
-        XCTAssertEqual(PersonClass.compare(lhs: person3, rhs: person6).debugDescription, "PersonClass.relationships.mother: TestableCombinePublishersTests.PersonClass is not equal to nil")
+        XCTAssertEqual(PersonClass.compare(lhs: person3, rhs: person6).debugDescription, "PersonClass.relationships.mother: TestableCombinePublishersUtilityTests.PersonClass is not equal to nil")
 
         // Dictionary value mismatch
         let person7 = PersonClass(name: "Baz", relationships: ["father": person1, "mother": person1])

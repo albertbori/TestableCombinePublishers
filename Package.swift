@@ -10,7 +10,16 @@ let package = Package(
         // Products define the executables and libraries a package produces, and make them visible to other packages.
         .library(
             name: "TestableCombinePublishers",
-            targets: ["TestableCombinePublishers"]),
+            targets: ["TestableCombinePublishers"]
+        ),
+        .library(
+            name: "SwiftTestingTestableCombinePublihers",
+            targets: ["SwiftTestingTestableCombinePublishers"]
+        ),
+        .library(
+            name: "TestableCombinePublishersUtility",
+            targets: ["TestableCombinePublishersUtility"]
+        ),
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
@@ -21,12 +30,38 @@ let package = Package(
         // Targets can depend on other targets in this package, and on products in packages this package depends on.
         .target(
             name: "TestableCombinePublishers",
-            dependencies: [],
+            dependencies: ["TestableCombinePublishersUtility"],
+            path: "Sources/TestableCombinePublishers",
             linkerSettings: [
                 .linkedFramework("XCTest")
             ]),
+        .target(
+            name: "SwiftTestingTestableCombinePublishers",
+            dependencies: ["TestableCombinePublishersUtility"],
+            path: "Sources/SwiftTestingTestableCombinePublishers",
+            linkerSettings: [
+                .linkedFramework("Testing")
+            ]
+        ),
+        .target(
+            name: "TestableCombinePublishersUtility",
+            dependencies: [],
+            path: "Sources/TestableCombinePublishersUtility"
+        ),
         .testTarget(
             name: "TestableCombinePublishersTests",
-            dependencies: ["TestableCombinePublishers"]),
+            dependencies: ["TestableCombinePublishers"],
+            path: "Tests/TestableCombinePublishersTests"
+        ),
+        .testTarget(
+            name: "SwiftTestingTestableCombinePublishersTests",
+            dependencies: ["SwiftTestingTestableCombinePublishers"],
+            path: "Tests/SwiftTestingTestableCombinePublishersTests"
+        ),
+        .testTarget(
+            name: "TestableCombinePublishersUtilityTests",
+            dependencies: ["TestableCombinePublishersUtility"],
+            path: "Tests/TestableCombinePublishersUtilityTests"
+        ),
     ]
 )
