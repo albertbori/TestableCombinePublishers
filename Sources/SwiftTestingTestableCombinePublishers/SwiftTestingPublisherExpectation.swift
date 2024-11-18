@@ -257,7 +257,7 @@ extension Publishers.CollectByCount {
     }
 }
 
-// MARK: - Publisher Extension for Recieve Value Expectations
+// MARK: - Publisher Extension for Receive Value Expectations
 
 public extension Publisher {
     /// Asserts that the provided value will be emitted by the `Publisher`
@@ -362,7 +362,7 @@ public extension SwiftTestingPublisherExpectation {
         return self
     }
     
-    /// Invokes the provided assertion closure on the `recieveCompletion` handler of the `Publisher`
+    /// Invokes the provided assertion closure on the `receiveCompletion` handler of the `Publisher`
     /// Useful for calling `#expect` variants where custom evaluation is required
     /// - Parameters:
     ///   - assertion: The assertion to be performed on the success/fail result status (`Subscribers.Completion<Failure>`)
@@ -403,7 +403,7 @@ public extension Publisher {
         .init(upstreamPublisher: self).expectNoCompletion(sourceLocation: sourceLocation)
     }
     
-    /// Invokes the provided assertion closure on the `recieveCompletion` handler of the `Publisher`
+    /// Invokes the provided assertion closure on the `receiveCompletion` handler of the `Publisher`
     /// Useful for calling `#expect` variants where custom evaluation is required
     /// - Parameters:
     ///   - assertion: The assertion to be performed on the success/fail result status (`Subscribers.Completion<Failure>`)

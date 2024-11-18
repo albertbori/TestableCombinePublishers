@@ -29,7 +29,7 @@ public final actor ThreadSafeArray<Element> {
     
     public subscript(index: Int) -> Element? {
         get {
-            guard index > 0, index < items.count else { return nil }
+            guard index >= 0, index < items.count else { return nil }
             return items[index]
         }
     }
