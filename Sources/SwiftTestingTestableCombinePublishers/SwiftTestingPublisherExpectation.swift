@@ -20,7 +20,6 @@ public final class SwiftTestingPublisherExpectation<UpstreamPublisher: Publisher
     private let upstreamPublisher: UpstreamPublisher
     private var cancellables: Set<AnyCancellable> = []
     private var expectations: [SwiftTestingExpectation] = []
-    private var fulfilledExpectations: [UUID] = []
     
     init(upstreamPublisher: UpstreamPublisher) {
         self.upstreamPublisher = upstreamPublisher
@@ -39,6 +38,9 @@ public final class SwiftTestingPublisherExpectation<UpstreamPublisher: Publisher
         }
         
         do {
+            // Keeps track of the IDs of the SwiftTestingExpectations that have been fulfilled
+            let fulfilledExpectations = ThreadSafeArray<UUID>()
+            
             try await withTimeout(seconds: timeout) {
                 try await withThrowingTaskGroup(of: SwiftTestingExpectation.self) { group in
                     
@@ -50,14 +52,13 @@ public final class SwiftTestingPublisherExpectation<UpstreamPublisher: Publisher
                     
                     for try await fulfilledExpectation in group {
                         // Check if fulfilled in the correct order
-                        self.fulfilledExpectations.append(fulfilledExpectation.id)
+                        await fulfilledExpectations.append(fulfilledExpectation.id)
                     }
                 }
                 
             } onTimeout: {
-                // For checking inverted expectations, we need to wait for the entire timeout first
-                
-                // Check that all non-inverted expectations are fulfilled, and inverted ones are not
+                // We need to recheck for fulfilled expectations on timeout since inverted expectations
+                // need to wait for the entire timeout.
                 for expectation in self.expectations {
                     if expectation.isInverted {
                         if expectation.isFulfilled {
@@ -70,8 +71,8 @@ public final class SwiftTestingPublisherExpectation<UpstreamPublisher: Publisher
                         }
                         
                         if enforceOrder,
-                            !self.fulfilledExpectations.isEmpty {
-                            guard expectation.id == self.fulfilledExpectations.removeFirst() else {
+                           await !fulfilledExpectations.isEmpty {
+                            guard await expectation.id == fulfilledExpectations.removeFirst() else {
                                 throw ExpectationError.incorrectOrder(expectation: expectation)
                             }
                         }
@@ -86,7 +87,7 @@ public final class SwiftTestingPublisherExpectation<UpstreamPublisher: Publisher
                 }
                 
                 if enforceOrder {
-                    guard fulfilledExpectations[expectationIndex] == expectation.id else {
+                    guard await fulfilledExpectations[expectationIndex] == expectation.id else {
                         throw ExpectationError.incorrectOrder(expectation: expectation)
                     }
                 }
@@ -247,6 +248,12 @@ public extension SwiftTestingPublisherExpectation {
             }
             .store(in: &cancellables)
         return self
+    }
+}
+
+extension Publishers.CollectByCount {
+    func expectTry(_ expected: [Upstream.Output]) where Upstream.Output: Equatable {
+        
     }
 }
 

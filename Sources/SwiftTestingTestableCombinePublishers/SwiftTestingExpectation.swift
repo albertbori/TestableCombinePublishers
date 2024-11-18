@@ -9,13 +9,14 @@ import Foundation
 import Testing
 
 /// The Swift Testing version of an `XCTestExpectation`.
-final actor SwiftTestingExpectation: Sendable {
+final class SwiftTestingExpectation {
     let id: UUID
     let description: String
     private let expectedFulfillmentCount: Int
     let isInverted: Bool
     let sourceLocation: SourceLocation
     private var actualFulfillmentCount: Int = 0
+    private let actualFulfillmentCountLock = NSLock()
     
     init(id: UUID = UUID(),
          description: String,
@@ -30,10 +31,14 @@ final actor SwiftTestingExpectation: Sendable {
     }
     
     func fulfill() {
-        actualFulfillmentCount += 1
+        actualFulfillmentCountLock.withLock {
+            actualFulfillmentCount += 1
+        }
     }
     
     var isFulfilled: Bool {
-        return actualFulfillmentCount == expectedFulfillmentCount
+        actualFulfillmentCountLock.withLock {
+            return actualFulfillmentCount >= expectedFulfillmentCount
+        }
     }
 }

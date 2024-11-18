@@ -20,12 +20,9 @@ final class SwiftTestingTestableCombinePublishersTests {
             .expect("cool")
             .waitForExpectations(timeout: 1)
         
-        // TODO: I had to add .collect() logic here
         await ["cool", "cool", "cool"]
             .publisher
-            .collect(3)
-            .expect(["cool", "cool", "cool"])
-        //            .expect("cool")
+            .expect("cool")
             .waitForExpectations(timeout: 1)
     }
     

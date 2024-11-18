@@ -1,4 +1,4 @@
-// swift-tools-version: 6.0
+// swift-tools-version: 5.6
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -32,7 +32,6 @@ let package = Package(
             name: "TestableCombinePublishers",
             dependencies: ["TestableCombinePublishersUtility"],
             path: "Sources/TestableCombinePublishers",
-            swiftSettings: [.swiftLanguageMode(.v5)],
             linkerSettings: [
                 .linkedFramework("XCTest")
             ]),
@@ -47,8 +46,7 @@ let package = Package(
         .target(
             name: "TestableCombinePublishersUtility",
             dependencies: [],
-            path: "Sources/TestableCombinePublishersUtility",
-            swiftSettings: [.swiftLanguageMode(.v5)]
+            path: "Sources/TestableCombinePublishersUtility"
         ),
         .testTarget(
             name: "TestableCombinePublishersTests",
