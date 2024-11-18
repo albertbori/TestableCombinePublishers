@@ -6,6 +6,7 @@
 //
 
 /// Thread-safe implementation of an array which wraps array logic inside of an actor.
+/// Note: This does not encapsulate all array functionality - just that which is needed for `SwiftTestingPublisherExpectation`.
 public final actor ThreadSafeArray<Element> {
     private(set) var items: Array<Element>
     
