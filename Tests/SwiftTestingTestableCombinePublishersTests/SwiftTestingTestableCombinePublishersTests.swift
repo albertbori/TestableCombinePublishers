@@ -186,7 +186,7 @@ final class SwiftTestingTestableCombinePublishersTests {
         }
     }
     
-    @Test func testMulitpleEquatableValues() async {
+    @Test func testMultipleEquatableValues() async {
         await ["cool", "neat", "awesome"]
             .publisher
             .collect(3)
@@ -194,7 +194,7 @@ final class SwiftTestingTestableCombinePublishersTests {
             .waitForExpectations(timeout: 1)
     }
     
-    @Test func testMulitpleEquatableValuesFail() async {
+    @Test func testMultipleEquatableValuesFail() async {
         await withKnownIssue("Incorrect assertion should fail") {
             await ["cool", "neat", "awesome"]
                 .publisher
@@ -212,7 +212,7 @@ final class SwiftTestingTestableCombinePublishersTests {
         }
     }
     
-    @Test func testMulitpleValuesClosure() async {
+    @Test func testMultipleValuesClosure() async {
         await ["cool", "neat", "awesome"]
             .publisher
             .collect(3)
@@ -220,7 +220,7 @@ final class SwiftTestingTestableCombinePublishersTests {
             .waitForExpectations(timeout: 1)
     }
     
-    @Test func testMulitpleValuesClosureFail() async {
+    @Test func testMultipleValuesClosureFail() async {
         await withKnownIssue("Incorrect assertion should fail") {
             await ["cool", "neat", "awesome"]
                 .publisher
@@ -418,7 +418,6 @@ final class SwiftTestingTestableCombinePublishersTests {
         }
     }
     
-    // TODO: Why is this supposed to fail?
     @Test func testOrderFail() async {
         await withKnownIssue("Incorrect assertion should fail") {
             let publisher = PassthroughSubject<String, Never>()

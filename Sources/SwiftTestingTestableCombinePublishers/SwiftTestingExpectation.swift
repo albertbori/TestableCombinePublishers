@@ -9,7 +9,7 @@ import Foundation
 import Testing
 
 /// The Swift Testing version of an `XCTestExpectation`.
-final class SwiftTestingExpectation {
+final actor SwiftTestingExpectation: Sendable {
     let id: UUID
     let description: String
     private let expectedFulfillmentCount: Int

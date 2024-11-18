@@ -20,7 +20,7 @@ public final class SwiftTestingPublisherExpectation<UpstreamPublisher: Publisher
     private let upstreamPublisher: UpstreamPublisher
     private var cancellables: Set<AnyCancellable> = []
     private var expectations: [SwiftTestingExpectation] = []
-    private var fullfilledExpectations: [UUID] = []
+    private var fulfilledExpectations: [UUID] = []
     
     init(upstreamPublisher: UpstreamPublisher) {
         self.upstreamPublisher = upstreamPublisher
@@ -39,29 +39,26 @@ public final class SwiftTestingPublisherExpectation<UpstreamPublisher: Publisher
         }
         
         do {
-            try await withTimeout(seconds: timeout) { [weak self] in
-                guard let strongSelf = self else { throw SelfReferenceError.deallocated }
-                
+            try await withTimeout(seconds: timeout) {
                 try await withThrowingTaskGroup(of: SwiftTestingExpectation.self) { group in
                     
-                    for expectation in strongSelf.expectations {
+                    for expectation in self.expectations {
                         group.addTask {
-                            try await strongSelf.waitForExpectationToBeFulfilled(expectation)
+                            try await self.waitForExpectationToBeFulfilled(expectation)
                         }
-                        
-                        for try await fulfilledExpectation in group {
-                            // Check if fulfilled in the correct order
-                            strongSelf.fullfilledExpectations.append(fulfilledExpectation.id)
-                        }
+                    }
+                    
+                    for try await fulfilledExpectation in group {
+                        // Check if fulfilled in the correct order
+                        self.fulfilledExpectations.append(fulfilledExpectation.id)
                     }
                 }
                 
-            } onTimeout: { [weak self] in
+            } onTimeout: {
                 // For checking inverted expectations, we need to wait for the entire timeout first
-                guard let strongSelf = self else { throw SelfReferenceError.deallocated }
                 
                 // Check that all non-inverted expectations are fulfilled, and inverted ones are not
-                for expectation in strongSelf.expectations {
+                for expectation in self.expectations {
                     if expectation.isInverted {
                         if expectation.isFulfilled {
                             throw ExpectationError.invertedExpectation(expectation: expectation)
@@ -72,8 +69,9 @@ public final class SwiftTestingPublisherExpectation<UpstreamPublisher: Publisher
                             throw ExpectationError.timedOut(timeout: timeout, expectation: expectation)
                         }
                         
-                        if enforceOrder {
-                            guard expectation.id == strongSelf.fullfilledExpectations.removeFirst() else {
+                        if enforceOrder,
+                            !self.fulfilledExpectations.isEmpty {
+                            guard expectation.id == self.fulfilledExpectations.removeFirst() else {
                                 throw ExpectationError.incorrectOrder(expectation: expectation)
                             }
                         }
@@ -88,7 +86,7 @@ public final class SwiftTestingPublisherExpectation<UpstreamPublisher: Publisher
                 }
                 
                 if enforceOrder {
-                    guard fullfilledExpectations[expectationIndex] == expectation.id else {
+                    guard fulfilledExpectations[expectationIndex] == expectation.id else {
                         throw ExpectationError.incorrectOrder(expectation: expectation)
                     }
                 }
@@ -113,7 +111,7 @@ public extension SwiftTestingPublisherExpectation {
     ///   - sourceLocation: The calling source. Used for showing context-appropriate unit test failures in Xcode
     /// - Returns: A chainable `SwiftTestingPublisherExpectation` that matches the contextual upstream `Publisher` type
     func expect(_ expected: UpstreamPublisher.Output, message: String? = nil, sourceLocation: SourceLocation = #_sourceLocation) -> Self where UpstreamPublisher.Output: Equatable {
-        let expectation = SwiftTestingExpectation(description: "expect(\(expected)", sourceLocation: sourceLocation)
+        let expectation = SwiftTestingExpectation(description: "expect(\(expected))", sourceLocation: sourceLocation)
         expectations.append(expectation)
         upstreamPublisher
             .sink { completion in
@@ -188,7 +186,7 @@ public extension SwiftTestingPublisherExpectation {
     /// - Parameters:
     ///   - sourceLocation: The calling source. Used for showing context-appropriate unit test failures in Xcode
     /// - Returns: A chainable `SwiftTestingPublisherExpectation` that matches the contextual upstream `Publisher` type
-    func expectNoValue(file: StaticString = #filePath, sourceLocation: SourceLocation = #_sourceLocation) -> Self {
+    func expectNoValue(sourceLocation: SourceLocation = #_sourceLocation) -> Self {
         let expectation = SwiftTestingExpectation(description: "expectNoValue()",
                                                   isInverted: true,
                                                   sourceLocation: sourceLocation)
@@ -663,12 +661,6 @@ enum ExpectationError: Error {
                 return expectation.sourceLocation
         }
     }
-}
-
-// MARK: SelfReferenceError
-
-enum SelfReferenceError: Error {
-    case deallocated
 }
 
 #endif
