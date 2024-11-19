@@ -28,34 +28,21 @@ public final class SwiftTestingPublisherExpectation<UpstreamPublisher: Publisher
     /// Pauses execution of the current thread until all declared expectations are met, or until the timeout period has expired
     /// - Parameters:
     ///   - timeout: The amount of time that the current process will wait for the expectations to be met
-    ///   - enforceOrder: Asserts that the expectations will be fulfilled in order of declaration or a failure will be emitted
     ///   - sourceLocation: The calling source. Used for showing context-appropriate unit test failures in Xcode
-    public func waitForExpectations(timeout: TimeInterval,
-                                    sourceLocation: SourceLocation = #_sourceLocation,
-                                    enforceOrder: Bool = false) async {
+    public func waitForExpectations(timeout: TimeInterval, sourceLocation: SourceLocation = #_sourceLocation) async {
         defer {
             cancellables.forEach { $0.cancel() }
         }
         
         do {
-            // Keeps track of the IDs of the SwiftTestingExpectations that have been fulfilled
-            let fulfilledExpectations = ThreadSafeArray<UUID>()
-            
             try await withTimeout(seconds: timeout) {
-                try await withThrowingTaskGroup(of: SwiftTestingExpectation.self) { group in
-                    
+                try await withThrowingTaskGroup(of: Void.self) { group in
                     for expectation in self.expectations {
                         group.addTask {
                             try await self.waitForExpectationToBeFulfilled(expectation)
                         }
                     }
-                    
-                    for try await fulfilledExpectation in group {
-                        // Check if fulfilled in the correct order
-                        await fulfilledExpectations.append(fulfilledExpectation.id)
-                    }
                 }
-                
             } onTimeout: {
                 // We need to recheck for fulfilled expectations on timeout since inverted expectations
                 // need to wait for the entire timeout.
@@ -69,27 +56,14 @@ public final class SwiftTestingPublisherExpectation<UpstreamPublisher: Publisher
                         guard expectation.isFulfilled else {
                             throw ExpectationError.timedOut(timeout: timeout, expectation: expectation)
                         }
-                        
-                        if enforceOrder,
-                           await !fulfilledExpectations.isEmpty {
-                            guard await expectation.id == fulfilledExpectations.removeFirst() else {
-                                throw ExpectationError.incorrectOrder(expectation: expectation)
-                            }
-                        }
                     }
                 }
             }
             
             // We should only get here if everything has been marked as fulfilled
-            for (expectationIndex, expectation) in expectations.enumerated() {
+            for expectation in expectations {
                 if expectation.isInverted {
                     throw ExpectationError.invertedExpectation(expectation: expectation)
-                }
-                
-                if enforceOrder {
-                    guard await fulfilledExpectations[expectationIndex] == expectation.id else {
-                        throw ExpectationError.incorrectOrder(expectation: expectation)
-                    }
                 }
             }
         } catch _ as TimeoutError {
@@ -112,8 +86,10 @@ public extension SwiftTestingPublisherExpectation {
     ///   - sourceLocation: The calling source. Used for showing context-appropriate unit test failures in Xcode
     /// - Returns: A chainable `SwiftTestingPublisherExpectation` that matches the contextual upstream `Publisher` type
     func expect(_ expected: UpstreamPublisher.Output, message: String? = nil, sourceLocation: SourceLocation = #_sourceLocation) -> Self where UpstreamPublisher.Output: Equatable {
-        let expectation = SwiftTestingExpectation(description: "expect(\(expected))", sourceLocation: sourceLocation)
+        let expectation = SwiftTestingExpectation(description: "expect(\(expected))",
+                                                  sourceLocation: sourceLocation)
         expectations.append(expectation)
+        
         upstreamPublisher
             .sink { completion in
             } receiveValue: { value in
@@ -143,10 +119,9 @@ public extension SwiftTestingPublisherExpectation {
                                                      expectedFulfillmentCount: count + 1,
                                                      isInverted: true,
                                                      sourceLocation: sourceLocation)
-        
-        
         expectations.append(minExpectation)
         expectations.append(maxExpectation)
+        
         upstreamPublisher
             .sink { completion in
             } receiveValue: { value in
@@ -170,6 +145,7 @@ public extension SwiftTestingPublisherExpectation {
         let expectation = SwiftTestingExpectation(description: "expectNot(\(expected))",
                                                   sourceLocation: sourceLocation)
         expectations.append(expectation)
+        
         upstreamPublisher
             .sink { completion in
             } receiveValue: { value in
@@ -192,6 +168,7 @@ public extension SwiftTestingPublisherExpectation {
                                                   isInverted: true,
                                                   sourceLocation: sourceLocation)
         expectations.append(expectation)
+        
         upstreamPublisher
             .sink { completion in
             } receiveValue: { value in
@@ -211,6 +188,7 @@ public extension SwiftTestingPublisherExpectation {
         let expectation = SwiftTestingExpectation(description: "expect(assertion:)",
                                                   sourceLocation: sourceLocation)
         expectations.append(expectation)
+        
         upstreamPublisher
             .sink { completion in
             } receiveValue: { value in
@@ -233,12 +211,14 @@ public extension SwiftTestingPublisherExpectation {
         let minExpectation = SwiftTestingExpectation(description: "min expectExactly(\(count) assertion)",
                                                      expectedFulfillmentCount: count,
                                                      sourceLocation: sourceLocation)
+        
         let maxExpectation = SwiftTestingExpectation(description: "max expectExactly(\(count) assertion)",
                                                      expectedFulfillmentCount: count + 1,
                                                      isInverted: true,
                                                      sourceLocation: sourceLocation)
         expectations.append(minExpectation)
         expectations.append(maxExpectation)
+        
         upstreamPublisher
             .sink { completion in
             } receiveValue: { value in
@@ -248,12 +228,6 @@ public extension SwiftTestingPublisherExpectation {
             }
             .store(in: &cancellables)
         return self
-    }
-}
-
-extension Publishers.CollectByCount {
-    func expectTry(_ expected: [Upstream.Output]) where Upstream.Output: Equatable {
-        
     }
 }
 
@@ -336,6 +310,7 @@ public extension SwiftTestingPublisherExpectation {
         let expectation = SwiftTestingExpectation(description: "expectCompletion()",
                                                   sourceLocation: sourceLocation)
         expectations.append(expectation)
+        
         upstreamPublisher
             .sink { completion in
                 expectation.fulfill()
@@ -354,6 +329,7 @@ public extension SwiftTestingPublisherExpectation {
                                                   isInverted: true,
                                                   sourceLocation: sourceLocation)
         expectations.append(expectation)
+        
         upstreamPublisher
             .sink { completion in
                 expectation.fulfill()
@@ -372,6 +348,7 @@ public extension SwiftTestingPublisherExpectation {
         let expectation = SwiftTestingExpectation(description: "expectCompletion(assertion:)",
                                                   sourceLocation: sourceLocation)
         expectations.append(expectation)
+        
         upstreamPublisher
             .sink { completion in
                 assertion(completion)
@@ -426,6 +403,7 @@ public extension SwiftTestingPublisherExpectation {
         let expectation = SwiftTestingExpectation(description: "expectSuccess()",
                                                   sourceLocation: sourceLocation)
         expectations.append(expectation)
+        
         upstreamPublisher
             .sink { completion in
                 if case .finished = completion {
@@ -462,6 +440,7 @@ public extension SwiftTestingPublisherExpectation {
         let expectation = SwiftTestingExpectation(description: "expectFailure()",
                                                   sourceLocation: sourceLocation)
         expectations.append(expectation)
+        
         upstreamPublisher
             .sink { completion in
                 if case .failure = completion {
@@ -482,6 +461,7 @@ public extension SwiftTestingPublisherExpectation {
         let expectation = SwiftTestingExpectation(description: "expectFailure(\(failure))",
                                                   sourceLocation: sourceLocation)
         expectations.append(expectation)
+        
         upstreamPublisher
             .sink { completion in
                 if case .failure(let error) = completion {
@@ -505,6 +485,7 @@ public extension SwiftTestingPublisherExpectation {
         let expectation = SwiftTestingExpectation(description: "expectNotFailure(\(failure))",
                                                   sourceLocation: sourceLocation)
         expectations.append(expectation)
+        
         upstreamPublisher
             .sink { completion in
                 if case .failure(let error) = completion {
@@ -528,6 +509,7 @@ public extension SwiftTestingPublisherExpectation {
         let expectation = SwiftTestingExpectation(description: "expectFailure(assertion:)",
                                                   sourceLocation: sourceLocation)
         expectations.append(expectation)
+        
         upstreamPublisher
             .sink { completion in
                 if case .failure(let error) = completion {
@@ -595,6 +577,7 @@ public extension SwiftTestingPublisherExpectation where UpstreamPublisher.Output
         let expectation = SwiftTestingExpectation(description: "expectVoid()",
                                                   sourceLocation: sourceLocation)
         expectations.append(expectation)
+        
         upstreamPublisher
             .sink { completion in
             } receiveValue: { value in
@@ -606,6 +589,7 @@ public extension SwiftTestingPublisherExpectation where UpstreamPublisher.Output
 }
 
 // MARK: - Publisher Extension for Void Publisher Expectations
+
 public extension Publisher where Output == Void {
     
     /// Asserts that `Void` will be emitted by the `Publisher` one or more times
@@ -620,15 +604,22 @@ public extension Publisher where Output == Void {
 // MARK: - Private
 
 private extension SwiftTestingPublisherExpectation {
-    func waitForExpectationToBeFulfilled(_ expectation: SwiftTestingExpectation) async throws -> SwiftTestingExpectation {
+    
+    /// Waits for the given `SwiftTestingExpectation` to be marked as fulfilled.
+    /// - Parameter expectation: The `SwiftTestingExpectation` to wait fulfillment for
+    func waitForExpectationToBeFulfilled(_ expectation: SwiftTestingExpectation) async throws {
         while !expectation.isFulfilled {
             // Wait for 0.1 seconds
             try await Task.sleep(nanoseconds: 100_000_000)
         }
-        
-        return expectation
     }
     
+    /// Creates a Swift Testing `Comment` used for displaying useful test failure messages in the Xcode console.
+    /// - Parameters:
+    ///   - lhs: The left-hand side value that a comparison was done with
+    ///   - rhs: The right-hand side value that a comparison was done with
+    ///   - message: An optional description to add to the `Comment`
+    /// - Returns: The Swift Testing Comment describing a test
     static func buildFailureMessage<T: Equatable>(lhs: T, rhs: T, message: String?) -> Comment {
         let failureMessage = [
             message,
@@ -644,14 +635,11 @@ private extension SwiftTestingPublisherExpectation {
 // MARK: - ExpectationError
 
 enum ExpectationError: Error {
-    case incorrectOrder(expectation: SwiftTestingExpectation)
     case invertedExpectation(expectation: SwiftTestingExpectation)
     case timedOut(timeout: TimeInterval, expectation: SwiftTestingExpectation)
     
     var comment: Comment {
         switch self {
-            case .incorrectOrder(let expectation):
-                return "Publisher expectation executed in the wrong order: \(expectation.description)"
             case .invertedExpectation(let expectation):
                 return "Inverted publisher expectation failed: \(expectation.description)"
             case let .timedOut(timeout, expectation):
@@ -662,8 +650,7 @@ enum ExpectationError: Error {
     
     var sourceLocation: SourceLocation {
         switch self {
-            case .incorrectOrder(let expectation),
-                    .invertedExpectation(let expectation),
+            case .invertedExpectation(let expectation),
                     .timedOut(_, let expectation):
                 return expectation.sourceLocation
         }

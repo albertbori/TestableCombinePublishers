@@ -14,7 +14,7 @@ final class SwiftTestingTestableCombinePublishersTests {
     
     // MARK: - Receive Value Expectations
     
-    @Test func testExpectEquatableValue() async {
+    @Test func expectEquatableValue() async {
         await ["cool"]
             .publisher
             .expect("cool")
@@ -26,7 +26,7 @@ final class SwiftTestingTestableCombinePublishersTests {
             .waitForExpectations(timeout: 1)
     }
     
-    @Test func testExpectEquatableValueFail() async {
+    @Test func expectEquatableValueFail() async {
         
         await withKnownIssue("Incorrect assertion should fail") {
             await ["cool"]
@@ -43,14 +43,14 @@ final class SwiftTestingTestableCombinePublishersTests {
         }
     }
     
-    @Test func testExpectExactlyCountOfEquatableValues() async {
+    @Test func expectExactlyCountOfEquatableValues() async {
         await ["cool", "cool"]
             .publisher
             .expectExactly(2, of: "cool")
             .waitForExpectations(timeout: 1)
     }
     
-    @Test func testExpectExactlyCountOfEquatableValuesFail() async {
+    @Test func expectExactlyCountOfEquatableValuesFail() async {
         await withKnownIssue("Incorrect assertion should fail") {
             await ["cool"]
                 .publisher
@@ -80,14 +80,14 @@ final class SwiftTestingTestableCombinePublishersTests {
         }
     }
     
-    @Test func testExpectNotEquatableValue() async {
+    @Test func expectNotEquatableValue() async {
         await ["neat"]
             .publisher
             .expectNot("cool")
             .waitForExpectations(timeout: 1)
     }
     
-    @Test func testExpectNotEquatableValueFail() async {
+    @Test func expectNotEquatableValueFail() async {
         await withKnownIssue("Incorrect assertion should fail") {
             await ["cool"]
                 .publisher
@@ -104,14 +104,14 @@ final class SwiftTestingTestableCombinePublishersTests {
         }
     }
     
-    @Test func testExpectNoValue() async {
+    @Test func expectNoValue() async {
         await [String]()
             .publisher
             .expectNoValue()
             .waitForExpectations(timeout: 1)
     }
     
-    @Test func testExpectNoValueFail() async {
+    @Test func expectNoValueFail() async {
         await withKnownIssue("Incorrect assertion should fail") {
             await ["cool"]
                 .publisher
@@ -120,7 +120,7 @@ final class SwiftTestingTestableCombinePublishersTests {
         }
     }
     
-    @Test func testExpectValueClosure() async {
+    @Test func expectValueClosure() async {
         await ["cool"]
             .publisher
             .expect({ #expect("cool" == $0) })
@@ -128,7 +128,7 @@ final class SwiftTestingTestableCombinePublishersTests {
         
     }
     
-    @Test func testExpectValueClosureFail() async {
+    @Test func expectValueClosureFail() async {
         await withKnownIssue("Incorrect assertion should fail") {
             await  ["cool"]
                 .publisher
@@ -145,7 +145,7 @@ final class SwiftTestingTestableCombinePublishersTests {
         
     }
     
-    @Test func testExpectExactlyCountOfValueClosure() async {
+    @Test func expectExactlyCountOfValueClosure() async {
         await ["cool", "cool"]
             .publisher
             .expectExactly(2, { #expect("cool" == $0) })
@@ -153,7 +153,7 @@ final class SwiftTestingTestableCombinePublishersTests {
         
     }
     
-    @Test func testExpectExactlyCountOfValueClosureFail() async {
+    @Test func expectExactlyCountOfValueClosureFail() async {
         await withKnownIssue("Incorrect assertion should fail") {
             await ["cool", "cool"]
                 .publisher
@@ -183,7 +183,7 @@ final class SwiftTestingTestableCombinePublishersTests {
         }
     }
     
-    @Test func testMultipleEquatableValues() async {
+    @Test func multipleEquatableValues() async {
         await ["cool", "neat", "awesome"]
             .publisher
             .collect(3)
@@ -191,7 +191,7 @@ final class SwiftTestingTestableCombinePublishersTests {
             .waitForExpectations(timeout: 1)
     }
     
-    @Test func testMultipleEquatableValuesFail() async {
+    @Test func multipleEquatableValuesFail() async {
         await withKnownIssue("Incorrect assertion should fail") {
             await ["cool", "neat", "awesome"]
                 .publisher
@@ -209,7 +209,7 @@ final class SwiftTestingTestableCombinePublishersTests {
         }
     }
     
-    @Test func testMultipleValuesClosure() async {
+    @Test func multipleValuesClosure() async {
         await ["cool", "neat", "awesome"]
             .publisher
             .collect(3)
@@ -217,7 +217,7 @@ final class SwiftTestingTestableCombinePublishersTests {
             .waitForExpectations(timeout: 1)
     }
     
-    @Test func testMultipleValuesClosureFail() async {
+    @Test func multipleValuesClosureFail() async {
         await withKnownIssue("Incorrect assertion should fail") {
             await ["cool", "neat", "awesome"]
                 .publisher
@@ -229,14 +229,14 @@ final class SwiftTestingTestableCombinePublishersTests {
     
     // MARK: - Receive Completion Expectations
     
-    @Test func testCompletion() async {
+    @Test func completion() async {
         await [Int]()
             .publisher
             .expectCompletion()
             .waitForExpectations(timeout: 1)
     }
     
-    @Test func testCompletionFail() async {
+    @Test func completionFail() async {
         await withKnownIssue("Incorrect assertion should fail") {
             await PassthroughSubject<Void, Never>()
                 .expectCompletion()
@@ -244,13 +244,13 @@ final class SwiftTestingTestableCombinePublishersTests {
         }
     }
     
-    @Test func testNoCompletion() async {
+    @Test func noCompletion() async {
         await  PassthroughSubject<Void, Never>()
             .expectNoCompletion()
             .waitForExpectations(timeout: 1)
     }
     
-    @Test func testNoCompletionFail() async {
+    @Test func noCompletionFail() async {
         await withKnownIssue("Incorrect assertion should fail") {
             await [Int]()
                 .publisher
@@ -259,14 +259,14 @@ final class SwiftTestingTestableCombinePublishersTests {
         }
     }
     
-    @Test func testCompletionClosure() async {
+    @Test func completionClosure() async {
         await  [Int]()
             .publisher
             .expectCompletion({ #expect($0 == .finished) })
             .waitForExpectations(timeout: 1)
     }
     
-    @Test func testCompletionClosureFail() async {
+    @Test func completionClosureFail() async {
         await withKnownIssue("Incorrect assertion should fail") {
             await Fail<Void, MockError>(error: MockError.someProblem)
                 .expectCompletion({ #expect($0 == .finished) })
@@ -282,14 +282,14 @@ final class SwiftTestingTestableCombinePublishersTests {
     
     // MARK: - Receive Success Expectations
     
-    @Test func testSuccessCompletion() async {
+    @Test func successCompletion() async {
         await [Int]()
             .publisher
             .expectSuccess()
             .waitForExpectations(timeout: 1)
     }
     
-    @Test func testSuccessCompletionFail() async {
+    @Test func successCompletionFail() async {
         await withKnownIssue("Incorrect assertion should fail") {
             await PassthroughSubject<Void, Never>()
                 .expectSuccess()
@@ -299,13 +299,13 @@ final class SwiftTestingTestableCombinePublishersTests {
     
     // MARK: - Receive Completion Failure Expectations
     
-    @Test func testFailureCompletion() async {
+    @Test func failureCompletion() async {
         await Fail<Void, MockError>(error: MockError.someProblem)
             .expectFailure()
             .waitForExpectations(timeout: 1)
     }
     
-    @Test func testFailureCompletionFail() async {
+    @Test func failureCompletionFail() async {
         await withKnownIssue("Incorrect assertion should fail") {
             await PassthroughSubject<Void, MockError>()
                 .expectFailure()
@@ -313,13 +313,13 @@ final class SwiftTestingTestableCombinePublishersTests {
         }
     }
     
-    @Test func testFailureValueCompletion() async {
+    @Test func failureValueCompletion() async {
         await Fail<Void, MockError>(error: MockError.someProblem)
             .expectFailure(MockError.someProblem)
             .waitForExpectations(timeout: 1)
     }
     
-    @Test func testFailureValueCompletionFail() async {
+    @Test func failureValueCompletionFail() async {
         await withKnownIssue("Incorrect assertion should fail") {
             await PassthroughSubject<Void, MockError>()
                 .expectFailure(MockError.someProblem)
@@ -333,13 +333,13 @@ final class SwiftTestingTestableCombinePublishersTests {
         }
     }
     
-    @Test func testNotFailureValueCompletion() async {
+    @Test func notFailureValueCompletion() async {
         await Fail<Void, MockError>(error: MockError.someProblem)
             .expectNotFailure(MockError.otherProblem)
             .waitForExpectations(timeout: 1)
     }
     
-    @Test func testNotFailureValueCompletionFail() async {
+    @Test func notFailureValueCompletionFail() async {
         await withKnownIssue("Incorrect assertion should fail") {
             await PassthroughSubject<Void, MockError>()
                 .expectNotFailure(MockError.someProblem)
@@ -353,13 +353,13 @@ final class SwiftTestingTestableCombinePublishersTests {
         }
     }
     
-    @Test func testFailureClosureCompletion() async {
+    @Test func failureClosureCompletion() async {
         await Fail<Void, MockError>(error: MockError.someProblem)
             .expectFailure({ #expect($0 == .someProblem) })
             .waitForExpectations(timeout: 1)
     }
     
-    @Test func testFailureClosureCompletionFail() async {
+    @Test func failureClosureCompletionFail() async {
         await withKnownIssue("Incorrect assertion should fail") {
             await Fail<Void, MockError>(error: MockError.someProblem)
                 .expectFailure({ #expect($0 == .otherProblem) })
@@ -373,13 +373,15 @@ final class SwiftTestingTestableCombinePublishersTests {
         }
     }
     
-    @Test func testVoid() async {
+    // MARK: - Void Publisher Expectations
+    
+    @Test func void() async {
         await Just<Void>(Void())
             .expectVoid()
             .waitForExpectations(timeout: 1)
     }
     
-    @Test func testVoidFail() async {
+    @Test func voidFail() async {
         await withKnownIssue("Incorrect assertion should fail") {
             await Empty<Void, Never>(completeImmediately: true)
                 .expectVoid()
@@ -389,7 +391,7 @@ final class SwiftTestingTestableCombinePublishersTests {
     
     // MARK: - Misc Tests
     
-    @Test func testMultipleExpectations() async {
+    @Test func multipleExpectations() async {
         await ["cool"]
             .publisher
             .expect("cool")
@@ -400,7 +402,7 @@ final class SwiftTestingTestableCombinePublishersTests {
             .waitForExpectations(timeout: 1)
     }
     
-    @Test func testMultipleFailures() async {
+    @Test func multipleFailures() async {
         await withKnownIssue("Incorrect assertion should fail") {
             await PassthroughSubject<String, MockError>()
                 .expect("cool")
@@ -415,60 +417,7 @@ final class SwiftTestingTestableCombinePublishersTests {
         }
     }
     
-    @Test func testOrderFail() async {
-        await withKnownIssue("Incorrect assertion should fail") {
-            let publisher = PassthroughSubject<String, Never>()
-            let test: SwiftTestingPublisherExpectation = publisher
-                .expectSuccess()
-                .expect("cool")
-            publisher.send("cool")
-            publisher.send(completion: .finished)
-            await test.waitForExpectations(timeout: 1, enforceOrder: true)
-        }
-    }
-    
-    @Test func succeedsWhenEnforceOrderCorrectOrder() async {
-        let publisher = PassthroughSubject<String, Never>()
-        let test: SwiftTestingPublisherExpectation = publisher
-            .collect(3)
-            .expectSuccess()
-            .expect(["this", "is", "cool"])
-        publisher.send("this")
-        publisher.send("is")
-        publisher.send("cool")
-        publisher.send(completion: .finished)
-        await test.waitForExpectations(timeout: 1, enforceOrder: true)
-    }
-    
-    @Test func failsWhenEnforceOrderIncorrectOrder() async {
-        await withKnownIssue("Incorrect assertion should fail") {
-            let publisher = PassthroughSubject<String, Never>()
-            let test: SwiftTestingPublisherExpectation = publisher
-                .collect(3)
-                .expectSuccess()
-                .expect(["this", "is", "cool"])
-            publisher.send("cool")
-            publisher.send("is")
-            publisher.send("this")
-            publisher.send(completion: .finished)
-            await test.waitForExpectations(timeout: 1, enforceOrder: true)
-        }
-    }
-    
-    @Test func succeedsNonEnforceOrderIncorrectOrder() async {
-        let publisher = PassthroughSubject<String, Never>()
-        let test: SwiftTestingPublisherExpectation = publisher
-            .collect(3)
-            .expectSuccess()
-            .expect(["this", "is", "cool"])
-        publisher.send("cool")
-        publisher.send("this")
-        publisher.send("is")
-        publisher.send(completion: .finished)
-        await test.waitForExpectations(timeout: 1)
-    }
-    
-    @Test func testDeferredWait() async {
+    @Test func deferredWait() async {
         let currentValueSubject = CurrentValueSubject<String, Never>("cool")
         let test = currentValueSubject
             .collect(2)
@@ -477,7 +426,7 @@ final class SwiftTestingTestableCombinePublishersTests {
         await test.waitForExpectations(timeout: 1)
     }
     
-    @Test func testMultiThreadedExpectation() async {
+    @Test func multiThreadedExpectation() async {
         let currentValueSubject = CurrentValueSubject<String, Never>("cool")
         DispatchQueue.global().asyncAfter(deadline: .now() + 0.5) {
             currentValueSubject.value = "neat"
@@ -488,7 +437,7 @@ final class SwiftTestingTestableCombinePublishersTests {
             .waitForExpectations(timeout: 1)
     }
     
-    @Test func testExpectNoValueAndCompletion() async {
+    @Test func expectNoValueAndCompletion() async {
         await [String]()
             .publisher
             .expectNoValue()
@@ -496,7 +445,7 @@ final class SwiftTestingTestableCombinePublishersTests {
             .waitForExpectations(timeout: 1)
     }
     
-    @Test func testExpectNoValueAndCompletionFail() async {
+    @Test func expectNoValueAndCompletionFail() async {
         await withKnownIssue("Incorrect assertion should fail") {
             await CurrentValueSubject<String, Never>("cool")
                 .expectNoValue()

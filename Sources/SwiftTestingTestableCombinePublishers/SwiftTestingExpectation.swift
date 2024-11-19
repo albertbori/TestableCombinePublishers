@@ -30,12 +30,16 @@ final class SwiftTestingExpectation {
         self.sourceLocation = sourceLocation
     }
     
+    /// Fulfills this expectation by increasing the `actualFulfillmentCount`.
     func fulfill() {
         actualFulfillmentCountLock.withLock {
             actualFulfillmentCount += 1
         }
     }
     
+    /// Determines if this expectation is considered fully fulfilled.
+    /// An expectation is considered fulfilled when the `actualFulfillmentCount` is greater than or equal to
+    /// the `expectedFulfillmentCount`
     var isFulfilled: Bool {
         actualFulfillmentCountLock.withLock {
             return actualFulfillmentCount >= expectedFulfillmentCount
