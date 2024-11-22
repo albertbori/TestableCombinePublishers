@@ -7,6 +7,7 @@
 import Combine
 import Foundation
 import XCTest
+import TestableCombinePublishersUtility
 
 /// Provides a convenient way for `Publisher`s to be unit tested.
 /// To use this, you can start by typing `expect` on any `Publisher` type.
@@ -638,3 +639,4 @@ extension PublisherExpectation {
         .joined(separator: " - ")
     }
 }
+ 

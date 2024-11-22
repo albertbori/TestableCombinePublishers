@@ -184,7 +184,7 @@ final class TestableCombinePublishersTests: XCTestCase {
 
     }
     
-    func testMulitpleEquatableValues() async {
+    func testMultipleEquatableValues() async {
         ["cool", "neat", "awesome"]
             .publisher
             .collect(3)
@@ -192,7 +192,7 @@ final class TestableCombinePublishersTests: XCTestCase {
             .waitForExpectations(timeout: 1)
     }
     
-    func testMulitpleEquatableValuesFail() async {
+    func testMultipleEquatableValuesFail() async {
         XCTExpectFailure("Incorrect assertion should fail")
         ["cool", "neat", "awesome"]
             .publisher
@@ -208,7 +208,7 @@ final class TestableCombinePublishersTests: XCTestCase {
             .waitForExpectations(timeout: 1)
     }
     
-    func testMulitpleValuesClosure() async {
+    func testMultipleValuesClosure() async {
         ["cool", "neat", "awesome"]
             .publisher
             .collect(3)
@@ -216,7 +216,7 @@ final class TestableCombinePublishersTests: XCTestCase {
             .waitForExpectations(timeout: 1)
     }
     
-    func testMulitpleValuesClosureFail() async {
+    func testMultipleValuesClosureFail() async {
         XCTExpectFailure("Incorrect assertion should fail")
         ["cool", "neat", "awesome"]
             .publisher
