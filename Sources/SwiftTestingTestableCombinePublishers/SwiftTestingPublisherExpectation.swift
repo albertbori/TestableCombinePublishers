@@ -201,7 +201,7 @@ public extension SwiftTestingPublisherExpectation {
     
     /// Invokes the provided assertion closure on every value emitted by the `Publisher`, expecting exactly `count` values emitted.
     /// ⚠️ This will wait for the full timeout.
-    /// Useful for calling `XCTAssert` variants where custom evaluation is required
+    /// Useful for calling `#expect` variants where custom evaluation is required
     /// - Parameters:
     ///   - count: The exact number of values that should be emitted from the `Publisher`
     ///   - assertion: The assertion to be performed on each emitted value of the `Publisher`

@@ -3,9 +3,11 @@
 An easy, declarative way to unit test Combine Publishers in Swift. Available for both XCTest and Swift Testing.
 
 **XCTest**:
+
 ![Example Combine Unit Test - XCTest](example_xctest.png)
 
 **Swift Testing**:
+
 ![Example Combine Unit Test - Swift Testing](example_swift_testing.png)
 
 ## About
@@ -247,8 +249,8 @@ somePublisher
 
 // or
 
-XCTAssertEqual(output, MyCustomType.bar(Baz(answer: 42)))
-#expect(output == MyCustomType.bar(Baz(answer: 42)))
+XCTAssertEqual(output, MyCustomType.bar(Baz(answer: 42))) // If using XCTest
+#expect(output == MyCustomType.bar(Baz(answer: 42))) // If using Swift Testing
 
 // or
 
