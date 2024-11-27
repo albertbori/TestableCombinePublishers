@@ -12,6 +12,21 @@ import Testing
 import Combine
 import TestableCombinePublishersUtility
 
+// MARK: - Swift Testing-Usable Publisher Extension
+
+public extension Publisher {
+    
+    /// Creates an explicit `SwiftTestingPublisherExpectation` whose upstream publisher refers to this `Publisher`.
+    /// This function is required to be called on a `Publisher` before any of the Swift Testing convenience testing functions can be used.
+    /// This method is required to avoid compiler confusion, as both the Swift Testing and XCTest versions of this library have the same function names.
+    /// - Returns: A chainable `SwiftTestingPublisherExpectation` that matches the contextual upstream `Publisher` type
+    func testable() -> SwiftTestingPublisherExpectation<Self> {
+        .init(upstreamPublisher: self)
+    }
+}
+
+// MARK: - SwiftTestingPublisherExpectation
+
 /// Provides a convenient way for `Publisher`s to be unit tested.
 /// To use this, you can start by typing `expect` on any `Publisher` type.
 /// `waitForExpectations` must be called to evaluate the expectations.
@@ -231,73 +246,6 @@ public extension SwiftTestingPublisherExpectation {
     }
 }
 
-// MARK: - Publisher Extension for Receive Value Expectations
-
-public extension Publisher {
-    /// Asserts that the provided value will be emitted by the `Publisher`
-    /// - Parameters:
-    ///   - expected: The `Equatable` value expected from the `Publisher`
-    ///   - message: The message to attach to the `#expect` failure, if a mismatch is found
-    ///   - sourceLocation: The calling source. Used for showing context-appropriate unit test failures in Xcode
-    /// - Returns: A chainable `SwiftTestingPublisherExpectation` that matches the contextual upstream `Publisher` type
-    func expect(_ expected: Output, message: String? = nil, sourceLocation: SourceLocation = #_sourceLocation) -> SwiftTestingPublisherExpectation<Self> where Output: Equatable {
-        .init(upstreamPublisher: self).expect(expected, message: message, sourceLocation: sourceLocation)
-    }
-    
-    /// Asserts that the provided `Equatable` value will be emitted by the `Publisher` exactly `count` times.
-    /// ⚠️ This will wait for the full timeout.
-    /// - Parameters:
-    ///   - count: The exact number of values that should be emitted from the `Publisher`
-    ///   - expected: The `Equatable` value expected from the `Publisher`
-    ///   - message: The message to attach to the `#expect` failure, if a mismatch is found
-    ///   - sourceLocation: The calling source. Used for showing context-appropriate unit test failures in Xcode
-    /// - Returns: A chainable `SwiftTestingPublisherExpectation` that matches the contextual upstream `Publisher` type
-    func expectExactly(_ count: Int, of expected: Output, message: String? = nil, sourceLocation: SourceLocation = #_sourceLocation) -> SwiftTestingPublisherExpectation<Self> where Output: Equatable {
-        .init(upstreamPublisher: self).expectExactly(count, of: expected, message: message, sourceLocation: sourceLocation)
-    }
-    
-    /// Asserts that a value will be emitted by the `Publisher` and that it does NOT match the provided `Equatable`
-    /// - Parameters:
-    ///   - expected: The `Equatable` value NOT expected from the `Publisher`
-    ///   - message: The message to attach to the `#expect` failure, if a match is found
-    ///   - sourceLocation: The calling source. Used for showing context-appropriate unit test failures in Xcode
-    /// - Returns: A chainable `SwiftTestingPublisherExpectation` that matches the contextual upstream `Publisher` type
-    func expectNot(_ expected: Output, message: String? = nil, sourceLocation: SourceLocation = #_sourceLocation) -> SwiftTestingPublisherExpectation<Self> where Output: Equatable {
-        .init(upstreamPublisher: self).expectNot(expected, message: message, sourceLocation: sourceLocation)
-    }
-    
-    /// Asserts that no value will be emitted by the `Publisher`.
-    /// ⚠️ This will wait for the full timeout.
-    /// - Parameters:
-    ///   - sourceLocation: The calling source. Used for showing context-appropriate unit test failures in Xcode
-    /// - Returns: A chainable `SwiftTestingPublisherExpectation` that matches the contextual upstream `Publisher` type
-    func expectNoValue(sourceLocation: SourceLocation = #_sourceLocation) -> SwiftTestingPublisherExpectation<Self> {
-        .init(upstreamPublisher: self).expectNoValue(sourceLocation: sourceLocation)
-    }
-    
-    /// Invokes the provided assertion closure on every value emitted by the `Publisher`.
-    /// Useful for calling `#expect` variants where custom evaluation is required
-    /// - Parameters:
-    ///   - assertion: The assertion to be performed on each emitted value of the `Publisher`
-    ///   - sourceLocation: The calling source. Used for showing context-appropriate unit test failures in Xcode
-    /// - Returns: A chainable `SwiftTestingPublisherExpectation` that matches the contextual upstream `Publisher` type
-    func expect(_ assertion: @escaping (Output) -> Void, sourceLocation: SourceLocation = #_sourceLocation) -> SwiftTestingPublisherExpectation<Self> {
-        .init(upstreamPublisher: self).expect(assertion, sourceLocation: sourceLocation)
-    }
-    
-    /// Invokes the provided assertion closure on every value emitted by the `Publisher`, expecting exactly `count` values emitted.
-    /// ⚠️ This will wait for the full timeout.
-    /// Useful for calling `#expect` variants where custom evaluation is required
-    /// - Parameters:
-    ///   - count: The exact number of values that should be emitted from the `Publisher`
-    ///   - assertion: The assertion to be performed on each emitted value of the `Publisher`
-    ///   - sourceLocation: The calling source. Used for showing context-appropriate unit test failures in Xcode
-    /// - Returns: A chainable `SwiftTestingPublisherExpectation` that matches the contextual upstream `Publisher` type
-    func expectExactly(_ count: Int, _ assertion: @escaping (Output) -> Void, sourceLocation: SourceLocation = #_sourceLocation) -> SwiftTestingPublisherExpectation<Self> {
-        .init(upstreamPublisher: self).expectExactly(count, assertion, sourceLocation: sourceLocation)
-    }
-}
-
 // MARK: - Receive Completion Expectations
 
 public extension SwiftTestingPublisherExpectation {
@@ -359,38 +307,6 @@ public extension SwiftTestingPublisherExpectation {
     }
 }
 
-// MARK: - Publisher Extension for Receive Completion Expectations
-
-public extension Publisher {
-    
-    /// Asserts that the `Publisher` data stream completes, indifferent of the returned success/failure status (`Subscribers.Completion<Failure>`)
-    /// - Parameters:
-    ///   - sourceLocation: The calling source. Used for showing context-appropriate unit test failures in Xcode
-    /// - Returns: A chainable `SwiftTestingPublisherExpectation` that matches the contextual upstream `Publisher` type
-    func expectCompletion(sourceLocation: SourceLocation = #_sourceLocation) -> SwiftTestingPublisherExpectation<Self> {
-        .init(upstreamPublisher: self).expectCompletion(sourceLocation: sourceLocation)
-    }
-    
-    /// Asserts that the `Publisher` data stream does NOT complete.
-    /// ⚠️ This will wait for the full timeout.
-    /// - Parameters:
-    ///   - sourceLocation: The calling source. Used for showing context-appropriate unit test failures in Xcode
-    /// - Returns: A chainable `SwiftTestingPublisherExpectation` that matches the contextual upstream `Publisher` type
-    func expectNoCompletion(sourceLocation: SourceLocation = #_sourceLocation) -> SwiftTestingPublisherExpectation<Self> {
-        .init(upstreamPublisher: self).expectNoCompletion(sourceLocation: sourceLocation)
-    }
-    
-    /// Invokes the provided assertion closure on the `receiveCompletion` handler of the `Publisher`
-    /// Useful for calling `#expect` variants where custom evaluation is required
-    /// - Parameters:
-    ///   - assertion: The assertion to be performed on the success/fail result status (`Subscribers.Completion<Failure>`)
-    ///   - sourceLocation: The calling source. Used for showing context-appropriate unit test failures in Xcode
-    /// - Returns: A chainable `SwiftTestingPublisherExpectation` that matches the contextual upstream `Publisher` type
-    func expectCompletion(_ assertion: @escaping (Subscribers.Completion<Failure>) -> Void, sourceLocation: SourceLocation = #_sourceLocation) -> SwiftTestingPublisherExpectation<Self> {
-        .init(upstreamPublisher: self).expectCompletion(assertion, sourceLocation: sourceLocation)
-    }
-}
-
 // MARK: - Receive Success Expectations
 
 public extension SwiftTestingPublisherExpectation {
@@ -412,19 +328,6 @@ public extension SwiftTestingPublisherExpectation {
             } receiveValue: { value in }
             .store(in: &cancellables)
         return self
-    }
-}
-
-// MARK: - Publisher Extension for Receive Success Expectations
-
-public extension Publisher {
-    
-    /// Asserts that the `Publisher` data stream completes with a success status (`.finished`)
-    /// - Parameters:
-    ///   - sourceLocation: The calling source. Used for showing context-appropriate unit test failures in Xcode
-    /// - Returns: A chainable `PublisherExpectation` that matches the contextual upstream `Publisher` type
-    func expectSuccess(sourceLocation: SourceLocation = #_sourceLocation) -> SwiftTestingPublisherExpectation<Self> {
-        .init(upstreamPublisher: self).expectSuccess(sourceLocation: sourceLocation)
     }
 }
 
@@ -522,49 +425,6 @@ public extension SwiftTestingPublisherExpectation {
     }
 }
 
-// MARK: - Publisher Extension for Receive Completion Failure Expectations
-
-public extension Publisher {
-    
-    /// Asserts that the `Publisher` data stream completes with a failure status (`.failure(Failure)`)
-    /// - Parameters:
-    ///   - sourceLocation: The calling source. Used for showing context-appropriate unit test failures in Xcode
-    /// - Returns: A chainable `SwiftTestingPublisherExpectation` that matches the contextual upstream `Publisher` type
-    func expectFailure(sourceLocation: SourceLocation = #_sourceLocation) -> SwiftTestingPublisherExpectation<Self> {
-        .init(upstreamPublisher: self).expectFailure(sourceLocation: sourceLocation)
-    }
-    
-    /// Asserts that the provided `Equatable` `Failure` type is returned when the `Publisher` completes
-    /// - Parameters:
-    ///   - failure: The `Equatable` `Failure` type that should be returned when the `Publisher` completes
-    ///   - message: The message to attach to the `#expect` failure, if a mismatch is found
-    ///   - sourceLocation: The calling source. Used for showing context-appropriate unit test failures in Xcode
-    /// - Returns: A chainable `SwiftTestingPublisherExpectation` that matches the contextual upstream `Publisher` type
-    func expectFailure(_ failure: Failure, message: String? = nil, sourceLocation: SourceLocation = #_sourceLocation) -> SwiftTestingPublisherExpectation<Self> where Failure: Equatable {
-        .init(upstreamPublisher: self).expectFailure(failure, message: message, sourceLocation: sourceLocation)
-    }
-    
-    /// Asserts that the `Publisher` completes with a `Failure` type which does NOT match the provided `Equatable` `Failure`
-    /// - Parameters:
-    ///   - failure: The `Equatable` `Failure` type that should be returned when the `Publisher` completes
-    ///   - message: The message to attach to the `#expect` failure, if a mismatch is found
-    ///   - sourceLocation: The calling source. Used for showing context-appropriate unit test failures in Xcode
-    /// - Returns: A chainable `SwiftTestingPublisherExpectation` that matches the contextual upstream `Publisher` type
-    func expectNotFailure(_ failure: Failure, message: String? = nil, sourceLocation: SourceLocation = #_sourceLocation) -> SwiftTestingPublisherExpectation<Self> where Failure: Equatable {
-        .init(upstreamPublisher: self).expectNotFailure(failure, message: message, sourceLocation: sourceLocation)
-    }
-    
-    /// Invokes the provided assertion closure on the `Failure` result's associated `Error` value  of the `Publisher`
-    /// Useful for calling `#expect` variants where custom evaluation is required
-    /// - Parameters:
-    ///   - assertion: The assertion to be performed on the `Failure` result's associated `Error` value
-    ///   - sourceLocation: The calling source. Used for showing context-appropriate unit test failures in Xcode
-    /// - Returns: A chainable `SwiftTestingPublisherExpectation` that matches the contextual upstream `Publisher` type
-    func expectFailure(_ assertion: @escaping (Failure) -> Void, sourceLocation: SourceLocation = #_sourceLocation) -> SwiftTestingPublisherExpectation<Self> {
-        .init(upstreamPublisher: self).expectFailure(assertion, sourceLocation: sourceLocation)
-    }
-}
-
 // MARK: - Void Publisher Expectations
 
 public extension SwiftTestingPublisherExpectation where UpstreamPublisher.Output == Void {
@@ -585,19 +445,6 @@ public extension SwiftTestingPublisherExpectation where UpstreamPublisher.Output
             }
             .store(in: &cancellables)
         return self
-    }
-}
-
-// MARK: - Publisher Extension for Void Publisher Expectations
-
-public extension Publisher where Output == Void {
-    
-    /// Asserts that `Void` will be emitted by the `Publisher` one or more times
-    /// - Parameters:
-    ///   - sourceLocation: The calling source. Used for showing context-appropriate unit test failures in Xcode
-    /// - Returns: A chainable `SwiftTestingPublisherExpectation` that matches the contextual upstream `Publisher` type
-    func expectVoid(sourceLocation: SourceLocation = #_sourceLocation) -> SwiftTestingPublisherExpectation<Self> {
-        .init(upstreamPublisher: self).expectVoid(sourceLocation: sourceLocation)
     }
 }
 
