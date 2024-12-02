@@ -1,3 +1,10 @@
+//
+//  ExampleTest.swift
+//  TestableCombinePublishers
+//
+//  Created by Ethan van Heerden on 11/15/24.
+//
+
 import Combine
 import Testing
 
