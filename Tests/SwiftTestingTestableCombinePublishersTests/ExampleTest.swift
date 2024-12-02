@@ -23,5 +23,3 @@ struct ExampleTest {
             .waitForExpectations(timeout: 1)
     }
 }
-
-
