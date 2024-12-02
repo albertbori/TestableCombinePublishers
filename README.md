@@ -22,6 +22,21 @@ Under the hood, `PublisherExpectation` is utilizing standard XCTest/Swift Testin
 
 In an `XCTestCase` or a Swift Testing suite, add a new unit test function, as normal, preparing the `Publisher` test subject to be tested. Utilize any combination of the examples below to validate the behavior of any `Publisher` in your unit tests.
 
+### A Note on Swift Testing
+
+This library provides different targets, `TestableCombinePublishers` and `SwiftTestingTestableCombinePublishers`, which enable utilizing the convenience expectation testing functions in both an XCTest and Swift Testing test suite, respectively. In an effort to keep the call-site expectation function names the same across both targets, you need to add an additional `.testable()` call on your Publisher _before_ you can utilize any of the testing functions. Otherwise, the compiler will not know which library you are referring:
+
+```swift
+// Swift Testing only:
+@Test func myPublisherTest() async {
+    await somePublisher
+        .testable() // Not needed in an XCTest suite
+        .expect(someEquatableValue)
+        // <other testing functions>
+        .waitForExpectations(timeout: 1)
+}
+```
+
 ### Examples
 
 For a `Publisher` that is expected to emit a single value and complete with `.finished`
@@ -40,6 +55,7 @@ func testSingleValueCompletingPublisher() {
 ```swift
 @Test func singleValueCompletingPublisher() async {
     await somePublisher
+        .testable()
         .expect(someEquatableValue)
         .expectSuccess()
         .waitForExpectations(timeout: 1)
@@ -64,6 +80,7 @@ func testMultipleValuePersistentPublisher() {
 @Test func multipleValuePersistentPublisher() async {
     await somePublisher
         .collect(someCount)
+        .testable()
         .expect(someEquatableValueArray)
         .expectNoCompletion()
         .waitForExpectations(timeout: 1)
@@ -85,6 +102,7 @@ func testPublisherFailure() {
 ```swift
 @Test func publisherFailure() async {
     await somePublisher
+        .testable()
         .expectFailure()
         .waitForExpectations(timeout: 1)
 }
@@ -106,6 +124,7 @@ func testLoadablePublisher() {
 ```swift
 @Test func loadablePublisher() async {
     let test = someDataSource.publisher
+        .testable()
         .expect(someEquatableValue)
     someDataSource.load()
     await test.waitForExpectations(timeout: 1)
@@ -131,6 +150,7 @@ func testNonEquatableSingleValue() {
 ```swift
 @Test func nonEquatableSingleValue() async {
     await somePublisher
+        .testable()
         .expect({ value in
             if case .loaded(let model) = value, !model.rows.isEmpty { } else {
                 Issue.record("Expected loaded and populated model")
@@ -162,6 +182,7 @@ func testNonEquatableFailure() {
 ```swift
 @Test func nonEquatableFailure() async {
     await somePublisher
+        .testable()
         .expectFailure({ failure in 
             switch failure {
             case .noInternet, .airPlaneMode:
@@ -212,7 +233,8 @@ It also negates the need to rely on custom `Equatable` implementations.
 
 **Important Disclosures**
 
-This is an imperfect and assuming implementation of `Equatable`. It should not be used without understanding the following concepts.
+- This is an imperfect and assuming implementation of `Equatable`. It should not be used without understanding the following concepts.
+- `AutomaticallyEquatable` is available in the `TestableCombinePublishersUtility` target
 
 The implementation:
 
@@ -243,7 +265,14 @@ extension MyCustomType: AutomaticallyEquatable { /*no-op*/ }
 Then, you can compare two of `MyCustomType` using `expect(...)`, `==`, or an XCTest/Swift Testing framework equality assertion.
 
 ```swift
+// XCTest
 somePublisher
+    .expect(MyCustomType.bar(Baz(answer: 42)))
+    .waitForExpectations(timeout: 1)
+
+// Swift Testing
+await somePublisher
+    .testable()
     .expect(MyCustomType.bar(Baz(answer: 42)))
     .waitForExpectations(timeout: 1)
 

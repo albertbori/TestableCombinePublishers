@@ -9,11 +9,12 @@ import Combine
 import Testing
 
 struct ExampleTest {
-
+    
     @Test func fail() async {
-        await withKnownIssue() {
+        await withKnownIssue {
             let publisher = CurrentValueSubject<String, Error>("foo")
             await publisher
+                .testable()
                 .expect("bar")
                 .expectSuccess()
                 .waitForExpectations(timeout: 1)
@@ -23,6 +24,7 @@ struct ExampleTest {
     @Test func pass() async {
         let publisher = ["baz"].publisher
         await publisher
+            .testable()
             .expect("baz")
             .expectSuccess()
             .waitForExpectations(timeout: 1)
